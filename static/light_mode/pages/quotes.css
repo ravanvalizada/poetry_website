@@ -1,0 +1,172 @@
+/* ============================================================
+   QUOTES — Salon Literary Design
+   ============================================================ */
+
+.quotes-page {
+  max-width: 860px;
+  margin: 50px auto;
+  padding: 0 22px 60px;
+}
+
+.quotes-header {
+  margin-bottom: 40px;
+  text-align: center;
+  padding-bottom: 28px;
+  border-bottom: 1px solid var(--border-soft);
+}
+.quotes-header h1 {
+  font-family: var(--font-display);
+  font-size: clamp(1.8rem, 5vw, 2.8rem);
+  font-weight: 400;
+  letter-spacing: 0.1em;
+  color: var(--ink);
+  margin-bottom: 10px;
+}
+.quotes-header p {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 1rem;
+  color: var(--ink-muted);
+}
+
+.quotes-list { display: flex; flex-direction: column; gap: 22px; }
+
+.quote-card {
+  background: var(--cream);
+  border: 1px solid var(--border-soft);
+  border-radius: 3px;
+  padding: 28px 30px 22px;
+  box-shadow: var(--shadow-sm);
+  position: relative;
+  transition: box-shadow 0.3s var(--ease), transform 0.3s var(--ease);
+}
+.quote-card::before {
+  content: '"';
+  position: absolute;
+  top: 12px;
+  left: 20px;
+  font-family: var(--font-display);
+  font-size: 5rem;
+  color: var(--border-warm);
+  opacity: 0.15;
+  line-height: 1;
+  pointer-events: none;
+}
+.quote-card:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+
+.quote-text {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 1.22rem;
+  line-height: 1.9;
+  color: var(--ink-soft);
+  white-space: pre-line;
+  margin-bottom: 18px;
+  padding-left: 8px;
+}
+
+.quote-author {
+  font-family: var(--font-display);
+  font-size: 0.78rem;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--sepia);
+  margin-bottom: 8px;
+}
+
+.quote-poem {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 0.88rem;
+  color: var(--ink-muted);
+  margin-bottom: 14px;
+}
+.quote-poem a {
+  color: var(--sepia);
+  font-style: normal;
+  font-weight: 600;
+}
+.quote-poem a:hover { text-decoration: underline; }
+
+.quote-description {
+  background: var(--vellum);
+  border-left: 2px solid var(--border-warm);
+  border-radius: 2px;
+  padding: 12px 16px;
+  font-family: var(--font-body);
+  font-size: 0.93rem;
+  line-height: 1.8;
+  color: var(--ink-soft);
+  margin-bottom: 18px;
+  white-space: pre-line;
+}
+
+.quote-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  font-family: var(--font-display);
+  font-size: 0.6rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+  padding-top: 14px;
+  border-top: 1px solid var(--border-soft);
+  margin-bottom: 14px;
+}
+
+.quote-actions { display: flex; gap: 10px; align-items: center; }
+
+.quote-like-btn,
+.quote-save-btn {
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  padding: 7px 14px;
+  font-family: var(--font-display);
+  font-size: 0.6rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  cursor: pointer;
+  background: transparent;
+  transition: all 0.18s;
+}
+.quote-like-btn { color: var(--ink-muted); }
+.quote-like-btn:hover { border-color: #8c2a1a; color: #8c2a1a; }
+.quote-like-btn.liked { background: #f4dede; border-color: #8c2a1a; color: #8c2a1a; }
+
+.quote-save-btn { color: var(--ink-muted); }
+.quote-save-btn:hover { border-color: var(--sepia); color: var(--sepia); }
+.quote-save-btn.saved { background: #e0eedd; border-color: #3a5c3a; color: #3a5c3a; }
+
+.quotes-empty {
+  text-align: center;
+  background: var(--cream);
+  border: 1px solid var(--border-soft);
+  border-radius: 3px;
+  padding: 60px 24px;
+  box-shadow: var(--shadow-sm);
+}
+.quotes-empty h3 {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  font-weight: 400;
+  letter-spacing: 0.08em;
+  margin-bottom: 10px;
+}
+.quotes-empty p {
+  font-family: var(--font-serif);
+  font-style: italic;
+  color: var(--ink-muted);
+}
+
+@media (max-width: 700px) {
+  .quotes-header h1 { font-size: 1.6rem; }
+  .quote-text { font-size: 1.05rem; }
+  .quote-card { padding: 20px 20px 16px; }
+}

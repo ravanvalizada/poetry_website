@@ -1,0 +1,41 @@
+/* ── Hidden Poet Game ───────────────────────────────────── */
+.stats-bar { display: flex; flex-wrap: wrap; gap: .6rem; justify-content: center;
+    margin-bottom: 2rem; }
+.stat-pill { padding: .4rem 1rem; border: 1px solid var(--border,#ddd);
+    border-radius: 999px; font-size: .88rem; }
+.questions-container { display: flex; flex-direction: column; gap: 1.5rem; }
+.question-card { border: 1px solid var(--border,#ddd); border-radius: 10px;
+    padding: 1.4rem; }
+.question-card--answered { border-color: #27ae60; }
+.question-number { font-size: .78rem; text-transform: uppercase; letter-spacing: .07em;
+    font-weight: 700; opacity: .5; margin-bottom: .8rem; }
+.stanza-display { white-space: pre-wrap; line-height: 2; font-size: 1.05rem;
+    font-style: italic; padding: 1rem 1.2rem;
+    border-left: 3px solid var(--accent,#e94560);
+    margin-bottom: 1.2rem; }
+.guess-form .form-row { align-items: flex-end; }
+.reveal-box { margin-top: .5rem; }
+.reveal-row { display: flex; flex-wrap: wrap; gap: .5rem; align-items: center;
+    margin-bottom: .5rem; font-size: .92rem; }
+.reveal-label { font-weight: 600; min-width: 60px; opacity: .65; }
+.reveal-answer { font-style: italic; }
+.correct-badge { color: #27ae60; font-weight: 700; font-size: .82rem; }
+.wrong-badge { color: #c0392b; font-size: .82rem; }
+.reveal-poem-link { font-size: .85rem; display: inline-block; margin-top: .5rem; opacity: .7; }
+.score-summary { text-align: center; padding: 2rem; margin: 2rem 0;
+    border: 1px solid var(--border,#ddd); border-radius: 10px;
+    background: var(--hover-bg,#f9f9f9); }
+.score-title { font-size: 1.3rem; font-weight: 700; margin-bottom: .5rem; }
+.score-display { font-size: 3rem; font-weight: 900; color: var(--accent,#e94560); }
+.score-sub { font-size: .9rem; opacity: .6; margin-top: .3rem; }
+.leaderboard-table { width: 100%; border-collapse: collapse; font-size: .92rem; }
+.leaderboard-table th { text-align: left; padding: .6rem .8rem; font-size: .8rem;
+    text-transform: uppercase; letter-spacing: .05em; opacity: .6;
+    border-bottom: 2px solid var(--border,#ddd); }
+.leaderboard-table td { padding: .55rem .8rem;
+    border-bottom: 1px solid var(--border,#ddd); }
+.rank-gold td:first-child { color: #f1c40f; font-weight: 800; }
+.rank-silver td:first-child { color: #bdc3c7; font-weight: 800; }
+.rank-bronze td:first-child { color: #cd7f32; font-weight: 800; }
+.admin-question-block { border: 1px dashed var(--border,#ccc); border-radius: 6px;
+    padding: 1rem; margin-bottom: 1rem; }

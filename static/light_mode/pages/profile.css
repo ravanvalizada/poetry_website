@@ -1,0 +1,488 @@
+/* ============================================================
+   PROFILE — Salon Literary Design
+   ============================================================ */
+
+.profile-container {
+  position: relative;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.profile-card {
+  width: 100%;
+  max-width: 940px;
+  background: var(--cream);
+  border-radius: 3px;
+  border: 1px solid var(--border-soft);
+  border-top: 2px solid var(--sepia);
+  padding: 30px 32px;
+  box-shadow: var(--shadow-md);
+  margin-bottom: 40px;
+  position: relative;
+}
+
+.profile-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.profile-photo {
+  width: 140px;
+  height: 140px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--border-warm);
+  box-shadow: var(--shadow-md);
+  filter: sepia(15%);
+  transition: filter 0.3s, transform 0.3s var(--ease);
+  flex-shrink: 0;
+}
+.profile-photo:hover {
+  filter: sepia(0%);
+  transform: scale(1.04);
+}
+
+.profile-info { flex: 1; min-width: 180px; }
+
+.profile-title {
+  font-family: var(--font-display);
+  font-size: 1.6rem;
+  font-weight: 400;
+  letter-spacing: 0.06em;
+  color: var(--ink);
+  margin: 0 0 8px;
+}
+
+.profile-user-id {
+    font-size: 0.95rem;
+    font-weight: 500;
+    opacity: 0.75;
+    color: #8b6f47;
+}
+
+.profile-stats {
+  display: flex;
+  gap: 30px;
+  margin: 14px 0;
+  flex-wrap: wrap;
+}
+.profile-stats div {
+  text-align: center;
+}
+.profile-stats div strong {
+  display: block;
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  font-weight: 500;
+  color: var(--ink);
+  letter-spacing: 0.05em;
+  cursor: pointer;
+}
+.profile-stats div span {
+  font-family: var(--font-display);
+  font-size: 0.58rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}
+
+.profile-extra {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 0.9rem;
+  color: var(--sepia-light);
+  margin-top: 4px;
+}
+
+/* Actions sidebar */
+.profile-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: flex-end;
+}
+
+.follow-btn {
+  padding: 9px 26px;
+  font-size: 0.64rem;
+  font-family: var(--font-display);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  border-radius: 2px;
+  border: 1px solid var(--sepia);
+  background: transparent;
+  color: var(--sepia);
+  cursor: pointer;
+  transition: all 0.2s var(--ease);
+}
+.follow-btn:hover,
+.follow-btn.following {
+  background: var(--ink-soft);
+  border-color: var(--ink-soft);
+  color: var(--parchment);
+}
+
+.edit-profile-btn {
+  padding: 9px 18px;
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--ink-muted);
+  border-radius: 2px;
+  cursor: pointer;
+  font-family: var(--font-display);
+  font-size: 0.62rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  transition: all 0.2s;
+}
+.edit-profile-btn:hover {
+  border-color: var(--sepia);
+  color: var(--sepia);
+}
+
+.message-btn {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--ink-muted);
+  border-radius: 2px;
+  padding: 9px 18px;
+  font-family: var(--font-display);
+  font-size: 0.62rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.message-btn:hover {
+  border-color: var(--sepia);
+  color: var(--sepia);
+}
+
+.about-btn {
+  background: var(--ink-soft);
+  color: var(--parchment);
+  border: none;
+  border-radius: 2px;
+  padding: 9px 22px;
+  font-family: var(--font-display);
+  font-size: 0.64rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.2s var(--ease-spring);
+}
+.about-btn:hover {
+  background: var(--sepia);
+  transform: translateY(-1px);
+}
+
+/* Remove photo */
+#remove-photo-btn {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--ink-muted);
+  padding: 5px 12px;
+  border-radius: 2px;
+  cursor: pointer;
+  font-family: var(--font-display);
+  font-size: 0.58rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  transition: all 0.2s;
+}
+#remove-photo-btn:hover {
+  border-color: #8c2a1a;
+  color: #8c2a1a;
+}
+
+/* ============================================================
+   FEATURED BADGES FLOATING
+   ============================================================ */
+.profile-featured-badges-floating {
+  position: absolute;
+  top: 0;
+  right: -278px;
+  width: 256px;
+  z-index: 5;
+}
+.profile-featured-badges-floating h4 {
+  font-family: var(--font-display);
+  font-size: 0.62rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--sepia);
+  margin-bottom: 14px;
+  text-align: center;
+}
+.profile-badge-column {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.profile-badge-pill {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--cream);
+  border: 1px solid var(--border-soft);
+  border-left: 2px solid var(--border-warm);
+  border-radius: 2px;
+  padding: 10px 14px;
+  color: var(--ink-soft);
+  font-family: var(--font-display);
+  font-size: 0.68rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.profile-badge-icon { font-size: 1.1rem; flex-shrink: 0; }
+.profile-badge-text { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.no-badges-yet { color: var(--ink-muted); font-size: 0.82rem; font-style: italic; font-family: var(--font-serif); }
+
+/* ============================================================
+   POEM CARDS (Profile Published Poems)
+   ============================================================ */
+.profile-poems { margin-top: 80px; }
+.profile-poems h3 {
+  font-family: var(--font-display);
+  font-size: 0.7rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--sepia);
+  margin-bottom: 18px;
+}
+
+.poem-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px;
+}
+
+.poem-card {
+  background: var(--cream);
+  padding: 18px 20px 16px;
+  border-radius: 3px;
+  border: 1px solid var(--border-soft);
+  border-left: 2px solid var(--sepia);
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow 0.25s var(--ease), transform 0.25s var(--ease), border-left-color 0.25s;
+}
+.poem-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-md);
+  border-left-color: var(--amber);
+}
+
+.poem-card .poem-title {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: 0.95rem;
+  letter-spacing: 0.04em;
+  color: var(--ink);
+  text-decoration: none;
+  display: block;
+  margin-bottom: 6px;
+}
+.poem-card .poem-title:hover { color: var(--sepia); }
+
+.poem-date {
+  display: block;
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 0.78rem;
+  color: var(--ink-muted);
+  margin-top: 4px;
+}
+
+/* Save poem / quote buttons on profile */
+.poem-actions-bar { margin: 14px 0 18px; display: flex; gap: 8px; }
+
+.save-poem-btn {
+  background: var(--ink-soft);
+  color: var(--parchment);
+  border: none;
+  border-radius: 2px;
+  padding: 8px 18px;
+  font-family: var(--font-display);
+  font-size: 0.6rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.2s var(--ease-spring);
+}
+.save-poem-btn:hover { background: var(--sepia); transform: translateY(-1px); }
+.save-poem-btn.saved { background: #3a5c3a; }
+
+/* Saved quotes */
+.saved-quotes-list { display: flex; flex-direction: column; gap: 14px; margin-top: 14px; }
+.saved-quote-card {
+  background: var(--cream);
+  border: 1px solid var(--border-soft);
+  border-left: 2px solid var(--sepia-light);
+  border-radius: 3px;
+  padding: 16px 18px;
+  box-shadow: var(--shadow-sm);
+}
+.saved-quote-text {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 1.05rem;
+  line-height: 1.8;
+  color: var(--ink-soft);
+  margin-bottom: 10px;
+}
+.saved-quote-meta { font-family: var(--font-body); font-size: 0.82rem; color: var(--ink-muted); }
+.saved-quote-meta a { color: var(--sepia); font-weight: 600; }
+.saved-quote-meta a:hover { text-decoration: underline; }
+
+/* ============================================================
+   MODAL (Edit Profile / About)
+   ============================================================ */
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 10000;
+  inset: 0;
+  background: rgba(20, 12, 4, 0.6);
+}
+.modal-content {
+  background: var(--cream);
+  margin: 8% auto;
+  padding: 34px 36px;
+  border: 1px solid var(--border-soft);
+  border-top: 2px solid var(--sepia);
+  width: 90%;
+  max-width: 460px;
+  border-radius: 3px;
+  box-shadow: var(--shadow-lg);
+  position: relative;
+}
+.close-btn {
+  position: absolute;
+  right: 18px;
+  top: 14px;
+  font-size: 22px;
+  cursor: pointer;
+  color: var(--ink-muted);
+  line-height: 1;
+  background: none;
+  border: none;
+  box-shadow: none;
+  padding: 0;
+  transform: none;
+}
+.close-btn:hover { color: var(--sepia); transform: none; }
+
+.modal-content input[type="text"],
+.modal-content input[type="file"] {
+  width: 100%;
+  padding: 10px 12px;
+  margin: 8px 0 16px;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  background: var(--vellum);
+  font-family: var(--font-body);
+  font-size: 0.97rem;
+  color: var(--ink);
+  outline: none;
+}
+.modal-content input:focus { border-color: var(--sepia); }
+.modal-content button {
+  background: var(--ink-soft);
+  color: var(--parchment);
+  padding: 10px 22px;
+  border: none;
+  border-radius: 2px;
+  font-family: var(--font-display);
+  font-size: 0.64rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.modal-content button:hover { background: var(--sepia); }
+
+/* About modal */
+.about-modal {
+  display: none;
+  position: fixed;
+  z-index: 2000;
+  inset: 0;
+  background: rgba(20, 12, 4, 0.55);
+}
+.about-modal-content {
+  background: var(--cream);
+  width: 90%;
+  max-width: 680px;
+  margin: 7% auto;
+  border-radius: 3px;
+  border: 1px solid var(--border-soft);
+  border-top: 2px solid var(--sepia);
+  padding: 32px 36px;
+  position: relative;
+  box-shadow: var(--shadow-lg);
+  animation: popupFade 0.22s var(--ease);
+}
+.about-modal-content h2 {
+  font-family: var(--font-display);
+  font-size: 1.6rem;
+  font-weight: 400;
+  letter-spacing: 0.07em;
+  margin-bottom: 20px;
+  color: var(--ink);
+}
+.about-author-text {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 1.05rem;
+  line-height: 2;
+  color: var(--ink-soft);
+  white-space: pre-line;
+  max-height: 380px;
+  overflow-y: auto;
+  padding-right: 6px;
+}
+#close-about-modal {
+  position: absolute;
+  right: 18px;
+  top: 14px;
+  font-size: 22px;
+  cursor: pointer;
+  color: var(--ink-muted);
+  background: none;
+  border: none;
+  box-shadow: none;
+  padding: 0;
+  line-height: 1;
+  transform: none;
+}
+#close-about-modal:hover { color: var(--sepia); transform: none; }
+
+@keyframes popupFade {
+  from { opacity: 0; transform: translateY(-10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.hidden { display: none !important; }
+
+/* Responsive */
+@media (max-width: 1250px) {
+  .profile-featured-badges-floating {
+    position: static;
+    width: 100%;
+    margin-top: 22px;
+    margin-bottom: 8px;
+  }
+  .profile-badge-column { flex-direction: row; flex-wrap: wrap; }
+  .profile-badge-pill { width: auto; }
+  .profile-poems { margin-top: 28px; }
+}
+
+@media (max-width: 600px) {
+  .profile-header { flex-direction: column; align-items: center; text-align: center; }
+  .profile-actions { align-items: center; }
+  .profile-stats { justify-content: center; }
+  .profile-title { font-size: 1.35rem; }
+}

@@ -1,0 +1,606 @@
+/* ============================================================
+   DARK MODE — Salon Literary Design
+   Activated by body.dark-mode class
+   All colors pulled from dark-mode CSS variables in style.css
+   ============================================================ */
+
+body.dark-mode {
+  background-color: var(--parchment);
+  color: var(--ink);
+}
+
+/* Navbar */
+body.dark-mode .navbar {
+  background: #0e0a04;
+  border-bottom-color: rgba(106,74,34,0.3);
+}
+body.dark-mode .navbar::before {
+  background: linear-gradient(90deg, transparent, rgba(196,148,58,0.4), rgba(139,94,53,0.3), transparent);
+}
+body.dark-mode .logo { color: rgba(210,195,172,0.8) !important; }
+body.dark-mode .nav-search-form input.nav-search {
+  background: rgba(255,255,255,0.04);
+  color: rgba(210, 195, 172, 0.8);
+  border-color: rgba(106,74,34,0.3);
+}
+body.dark-mode .nav-right a { color: rgba(210,195,172,0.7); }
+body.dark-mode .profile-dropdown-menu { background: #1a1008; border-color: rgba(106,74,34,0.2); }
+body.dark-mode .profile-dropdown-menu a { color: rgba(210,195,172,0.75); }
+body.dark-mode .profile-dropdown-menu a:hover { background: rgba(255,255,255,0.05); }
+body.dark-mode .profile-dropdown-btn { color: rgba(210,195,172,0.7) !important; }
+body.dark-mode #darkModeToggle { border-color: rgba(106,74,34,0.35); color: rgba(210,195,172,0.7); }
+
+
+
+/* =========================================================
+   SALONS — DARK MODE
+   ========================================================= */
+
+body.dark-mode .salons-dropdown-menu {
+    color: #e7d8c7;
+    background: #1f1712;
+    border: 1px solid #4b3728;
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.45);
+}
+
+body.dark-mode .salons-dropdown-menu a {
+    color: #e7d8c7;
+}
+
+body.dark-mode .salons-dropdown-menu a:hover {
+    background: #2c211a;
+}
+
+body.dark-mode .salons-divider {
+    border-top: 1px solid #4b3728;
+}
+
+body.dark-mode .salons-dropdown-btn {
+  color: rgba(210,195,172,0.8) !important;
+  font-size: 0.88rem;
+  font-weight: 400;
+  letter-spacing: 0.28em;
+}
+
+body.dark-mode .nav-discover-link {
+  color: rgba(210,195,172,0.8) !important;
+  font-size: 0.88rem;
+  font-weight: 400;
+  letter-spacing: 0.28em;
+}
+
+/* Shared */
+body.dark-mode .salon-title,
+body.dark-mode .section-heading,
+body.dark-mode .page-title,
+body.dark-mode .chain-detail-title,
+body.dark-mode .theme-title,
+body.dark-mode .duel-title,
+body.dark-mode .archive-theme-title,
+body.dark-mode .circle-detail-name,
+body.dark-mode .score-title,
+body.dark-mode .card-subheading,
+body.dark-mode .section-subheading,
+body.dark-mode .circle-name,
+body.dark-mode .entry-title,
+body.dark-mode .duel-poet-name,
+body.dark-mode .duel-poem-title {
+    color: #f3e7d7;
+}
+
+body.dark-mode .salon-subtitle,
+body.dark-mode .empty-state,
+body.dark-mode .info-note,
+body.dark-mode .back-link,
+body.dark-mode .chain-card-meta,
+body.dark-mode .chain-detail-meta,
+body.dark-mode .theme-dates,
+body.dark-mode .entry-author,
+body.dark-mode .entry-date,
+body.dark-mode .past-theme-dates,
+body.dark-mode .circle-owner,
+body.dark-mode .circle-meta,
+body.dark-mode .circle-detail-meta,
+body.dark-mode .post-date,
+body.dark-mode .post-poem-author,
+body.dark-mode .line-author,
+body.dark-mode .queue-in,
+body.dark-mode .queue-capacity,
+body.dark-mode .living-total,
+body.dark-mode .game-date-label {
+    color: #bba892;
+    opacity: 1;
+}
+
+body.dark-mode .section-heading,
+body.dark-mode .add-stanza-section,
+body.dark-mode .end-poem-section,
+body.dark-mode .circle-header,
+body.dark-mode .archive-theme-section {
+    border-bottom-color: #4b3728;
+}
+
+body.dark-mode .count-pill {
+    background: #a24c44;
+    color: #fff6ee;
+}
+
+/* Buttons */
+body.dark-mode .btn-primary {
+    background: #a24c44;
+    color: #fff6ee;
+}
+
+body.dark-mode .btn-primary:hover {
+    opacity: 0.9;
+}
+
+body.dark-mode .btn-secondary {
+    background: transparent;
+    border: 1px solid #5b4433;
+    color: #eadbc8;
+}
+
+body.dark-mode .btn-secondary:hover {
+    background: #2a2019;
+}
+
+body.dark-mode .btn-danger {
+    background: #8f3328;
+    color: #fff3ef;
+}
+
+body.dark-mode .btn-ghost,
+body.dark-mode .btn-xs {
+    color: #d6c1a8;
+}
+
+/* Forms */
+body.dark-mode .form-group label {
+    color: #d8c4af;
+    opacity: 1;
+}
+
+body.dark-mode .form-group input,
+body.dark-mode .form-group textarea,
+body.dark-mode .form-group select,
+body.dark-mode .invite-form input,
+body.dark-mode .circle-chat-form input,
+body.dark-mode .line-form input {
+    background: #241b15;
+    color: #f2e6d7;
+    border: 1px solid #5b4433;
+}
+
+body.dark-mode .form-group input::placeholder,
+body.dark-mode .form-group textarea::placeholder,
+body.dark-mode .invite-form input::placeholder,
+body.dark-mode .circle-chat-form input::placeholder,
+body.dark-mode .line-form input::placeholder {
+    color: #a88f79;
+}
+
+body.dark-mode .form-error {
+    color: #ff8f7d;
+}
+
+/* Chain Salon */
+body.dark-mode .chain-card,
+body.dark-mode .entry-card,
+body.dark-mode .duel-row,
+body.dark-mode .duel-poem-card,
+body.dark-mode .question-card,
+body.dark-mode .score-summary,
+body.dark-mode .circle-card,
+body.dark-mode .circle-post-form-card,
+body.dark-mode .circle-members-card,
+body.dark-mode .circle-chat-card,
+body.dark-mode .circle-post,
+body.dark-mode .queue-card,
+body.dark-mode .theme-card,
+body.dark-mode .past-theme-row,
+body.dark-mode .add-line-section,
+body.dark-mode .duel-accept-box,
+body.dark-mode .admin-section {
+    background: #1f1712;
+    border-color: #4b3728;
+    color: #eadbc8;
+}
+
+body.dark-mode .chain-card:hover,
+body.dark-mode .duel-row:hover {
+    box-shadow: 0 6px 18px rgba(0,0,0,0.35);
+    background: #261d17;
+}
+
+body.dark-mode .chain-card--ended {
+    opacity: 0.72;
+}
+
+body.dark-mode .chain-label,
+body.dark-mode .collab-badge,
+body.dark-mode .queue-turn-badge {
+    background: #a24c44;
+    color: #fff4ed;
+}
+
+body.dark-mode .chain-label--ended {
+    color: #a89684;
+}
+
+body.dark-mode .contributor-chip,
+body.dark-mode .circle-role--member,
+body.dark-mode .post-poem-preview,
+body.dark-mode .queue-item--active {
+    background: #2c211a;
+    color: #e6d6c6;
+}
+
+body.dark-mode .stanza-block,
+body.dark-mode .stanza-display {
+    border-left-color: #a24c44;
+}
+
+body.dark-mode .stanza-text,
+body.dark-mode .duel-poem-text,
+body.dark-mode .post-body,
+body.dark-mode .entry-text-preview,
+body.dark-mode .line-text {
+    color: #efe3d4;
+}
+
+body.dark-mode .stanza-header,
+body.dark-mode .stanza-author,
+body.dark-mode .stanza-number {
+    color: #bca892;
+    opacity: 1;
+}
+
+/* Weekly Theme */
+body.dark-mode .theme-card {
+    background: #241b15;
+}
+
+body.dark-mode .theme-label,
+body.dark-mode .question-number,
+body.dark-mode .volume-heading {
+    color: #ae9984;
+    opacity: 1;
+}
+
+body.dark-mode .countdown-value,
+body.dark-mode .score-display {
+    color: #d98d7f;
+}
+
+body.dark-mode .submitted-note {
+    color: #77c68a;
+}
+
+body.dark-mode .no-theme-card {
+    color: #bda996;
+}
+
+body.dark-mode .admin-section {
+    background: rgba(255,255,255,0.02);
+    border-style: dashed;
+}
+
+/* Duels */
+body.dark-mode .duel-status--pending {
+    background: #b57618;
+    color: #fff8ec;
+}
+
+body.dark-mode .duel-status--active {
+    background: #2f8b57;
+    color: #f4fff9;
+}
+
+body.dark-mode .duel-status--closed {
+    background: #66727a;
+    color: #f3f7fa;
+}
+
+body.dark-mode .duel-winner {
+    border-color: #d4a62a;
+    box-shadow: 0 0 0 2px #d4a62a;
+}
+
+body.dark-mode .winner-crown {
+    color: #e0b83d;
+}
+
+body.dark-mode .draw-note {
+    color: #b3a08f;
+}
+
+body.dark-mode .vs,
+body.dark-mode .vs-large {
+    color: #947f6b;
+    opacity: 1;
+}
+
+/* Hidden Poet */
+body.dark-mode .question-card--answered {
+    border-color: #3fa164;
+}
+
+body.dark-mode .reveal-label {
+    color: #c9b6a2;
+    opacity: 1;
+}
+
+body.dark-mode .reveal-answer,
+body.dark-mode .reveal-poem-link,
+body.dark-mode .post-poem-link,
+body.dark-mode .member-name,
+body.dark-mode .queue-username,
+body.dark-mode .post-author,
+body.dark-mode .circle-name,
+body.dark-mode .past-theme-title {
+    color: #f0e2d1;
+}
+
+body.dark-mode .correct-badge {
+    color: #72c98b;
+}
+
+body.dark-mode .wrong-badge {
+    color: #ff9086;
+}
+
+body.dark-mode .leaderboard-table th {
+    color: #bca997;
+    border-bottom-color: #4b3728;
+}
+
+body.dark-mode .leaderboard-table td {
+    border-bottom-color: #3a2b20;
+    color: #eadbc8;
+}
+
+body.dark-mode .rank-gold td:first-child {
+    color: #dfbf53;
+}
+
+body.dark-mode .rank-silver td:first-child {
+    color: #c9c9c9;
+}
+
+body.dark-mode .rank-bronze td:first-child {
+    color: #c99162;
+}
+
+body.dark-mode .admin-question-block {
+    border-color: #5c4636;
+}
+
+/* Salon Circles */
+body.dark-mode .circle-card--mine {
+    border-left-color: #a24c44;
+}
+
+body.dark-mode .circle-role--owner {
+    background: #a24c44;
+    color: #fff6ef;
+}
+
+body.dark-mode .circle-role--admin {
+    background: #6f4592;
+    color: #f8f2ff;
+}
+
+body.dark-mode .circle-chat-messages {
+    background: #18120e;
+    border-color: #4b3728;
+}
+
+body.dark-mode .circle-chat-msg,
+body.dark-mode .circle-chat-author {
+    color: #eadbc8;
+}
+
+body.dark-mode .circle-chat-time {
+    color: #9e8a76;
+    opacity: 1;
+}
+
+body.dark-mode .circle-chat-msg--mine .circle-chat-author {
+    color: #d88a7d;
+}
+
+body.dark-mode .post-poem-preview {
+    border: 1px solid #453327;
+}
+
+/* Living Poem */
+body.dark-mode .living-line {
+    border-bottom-color: #33261d;
+}
+
+body.dark-mode .line-number {
+    color: #927f6f;
+    opacity: 1;
+}
+
+body.dark-mode .living-poem-empty {
+    color: #a79280;
+}
+
+body.dark-mode .deadline-note,
+body.dark-mode .queue-deadline,
+body.dark-mode .queue-my-pos {
+    color: #cfb9a3;
+}
+
+body.dark-mode .queue-item {
+    color: #eadbc8;
+}
+
+/* Inline forms */
+body.dark-mode .pin-form {
+    background: transparent;
+    border: none;
+}
+
+
+
+/* Forms & inputs */
+body.dark-mode form {
+  background: var(--cream);
+  border-color: var(--border-soft);
+}
+body.dark-mode input,
+body.dark-mode textarea,
+body.dark-mode select {
+  background: var(--vellum);
+  border-color: var(--border);
+  color: var(--ink);
+}
+body.dark-mode input::placeholder { color: var(--ink-muted); }
+body.dark-mode input:focus,
+body.dark-mode textarea:focus,
+body.dark-mode select:focus {
+  border-color: var(--sepia);
+  box-shadow: 0 0 0 3px rgba(196,160,106,0.15);
+}
+
+/* Cards */
+body.dark-mode .poem,
+body.dark-mode .poem-preview,
+body.dark-mode .poem-card,
+body.dark-mode .top-poem-card,
+body.dark-mode .top-author-card,
+body.dark-mode .quote-card,
+body.dark-mode .badge-card,
+body.dark-mode .comment,
+body.dark-mode .waiting-poem,
+body.dark-mode .profile-card,
+body.dark-mode .modal-content,
+body.dark-mode .about-modal-content,
+body.dark-mode .featured-salon-box,
+body.dark-mode .new-comment {
+  background: var(--cream);
+  border-color: var(--border-soft);
+}
+
+body.dark-mode .vellum,
+body.dark-mode .comment.reply,
+body.dark-mode .quote-description,
+body.dark-mode .saved-quote-card,
+body.dark-mode .reply-input,
+body.dark-mode .poem-detail pre {
+  background: var(--vellum);
+  border-color: var(--border-soft);
+}
+
+/* ── Circle Post Poem Search : Dark Mode ────────────────── */
+body.dark-mode .poem-search-input {
+    background: #241b15;
+    color: #f2e6d7;
+    border: 1px solid #5b4433;
+}
+
+body.dark-mode .poem-search-input::placeholder {
+    color: #a88f79;
+}
+
+body.dark-mode .poem-search-results {
+    background: #1f1712;
+    border: 1px solid #4b3728;
+    box-shadow: 0 10px 24px rgba(0,0,0,.35);
+}
+
+body.dark-mode .poem-result-item {
+    border-bottom: 1px solid #3a2b20;
+    color: #eadbc8;
+}
+
+body.dark-mode .poem-result-item:hover {
+    background: #2c211a;
+}
+
+body.dark-mode .poem-result-title {
+    color: #f0e2d1;
+}
+
+body.dark-mode .poem-result-author {
+    color: #bba892;
+    opacity: 1;
+}
+
+body.dark-mode .selected-poem-preview {
+    background: #2a2019;
+    border: 1px solid #4b3728;
+    color: #eadbc8;
+}
+
+body.dark-mode .selected-poem-title {
+    color: #f3e7d7;
+}
+
+body.dark-mode .selected-poem-meta {
+    color: #bba892;
+    opacity: 1;
+}
+
+body.dark-mode .selected-poem-clear {
+    color: #d6c1a8;
+}
+
+body.dark-mode .selected-poem-clear:hover {
+    color: #f0e2d1;
+    opacity: 1;
+}
+
+/* Footer */
+body.dark-mode .footer {
+  background: var(--parchment-warm);
+  border-top-color: var(--border);
+  color: var(--ink-muted);
+}
+
+/* Messages panel */
+body.dark-mode .messages-panel {
+  background: var(--cream);
+  border-color: var(--border-soft);
+}
+body.dark-mode .messages-header {
+  background: var(--parchment-mid);
+  border-bottom-color: var(--border);
+}
+body.dark-mode .chat-bubble {
+  background: var(--vellum);
+  color: var(--ink);
+  border-color: var(--border-soft);
+}
+body.dark-mode .chat-message.sent .chat-bubble {
+  background: var(--ink-soft);
+  color: var(--parchment);
+}
+body.dark-mode .conversation-item { border-bottom-color: var(--border-soft); }
+body.dark-mode .conversation-item:hover { background: var(--parchment-mid); }
+body.dark-mode .chat-input { border-top-color: var(--border); }
+body.dark-mode .chat-input input { background: var(--vellum); border-color: var(--border); color: var(--ink); }
+
+/* Misc */
+body.dark-mode .filter-btn,
+body.dark-mode .genre-btn {
+  border-color: var(--border);
+  color: var(--ink-muted);
+}
+body.dark-mode .filter-btn:hover,
+body.dark-mode .filter-btn.active,
+body.dark-mode .genre-btn:hover,
+body.dark-mode .genre-btn.active {
+  background: var(--ink-soft);
+  color: var(--parchment);
+  border-color: var(--ink-soft);
+}
+
+body.dark-mode .messages-toggle {
+  background: var(--ink-soft);
+  border-color: var(--border-warm);
+  color: var(--parchment);
+}
