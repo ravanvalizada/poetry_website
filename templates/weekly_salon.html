@@ -1,0 +1,167 @@
+{% extends "base.html" %}
+{% block title %}Weekly Theme Salon{% endblock %}
+{% block content %}
+<div class="salon-page">
+
+  <div class="salon-hero">
+    <h1 class="salon-title">{{ t("salon", "weekly_title") }}</h1>
+    <p class="salon-subtitle">A new theme every week. Write, compete, inspire.</p>
+  </div>
+
+  {% if theme %}
+  <section class="theme-spotlight">
+    <div class="theme-card">
+      <p class="theme-label">{{ t("salon", "this_weeks_theme") }}</p>
+      <h2 class="theme-title">{{ theme.title }}</h2>
+      <p class="theme-dates">{{ theme.start_date }} — {{ theme.end_date }}</p>
+      {% if time_left is not none %}
+      <div class="countdown-bar">
+        <span class="countdown-label">{{ t("salon", "time_remaining") }}:</span>
+        <span id="countdown" class="countdown-value" data-seconds="{{ time_left }}">…</span>
+      </div>
+      {% endif %}
+    </div>
+  </section>
+
+  {% if session.get("username") %}
+  {% if not user_submitted %}
+  <section class="salon-section">
+    <h2 class="section-heading">{{ t("salon", "submit_poem") }}</h2>
+    <form method="POST" action="{{ url_for('weekly_salon_submit') }}" class="salon-form">
+      <div class="form-group">
+        <label for="title">{{ t("poem", "title") }}</label>
+        <input type="text" id="title" name="title" placeholder="{{ t('poem', 'title') }}…" required>
+      </div>
+      <div class="form-group">
+        <label for="text">{{ t("poem", "text") }}</label>
+        <textarea id="text" name="text" rows="10" placeholder="{{ t('poem', 'text') }}…" required></textarea>
+      </div>
+      <button type="submit" class="btn-primary">{{ t("salon", "submit_btn") }}</button>
+    </form>
+  </section>
+  {% else %}
+  <p class="info-note submitted-note">✓ You have already submitted a poem for this week's theme.</p>
+  {% endif %}
+  {% endif %}
+
+  <section class="salon-section">
+    <h2 class="section-heading">This Week's Entries <span class="count-pill">{{ entries|length }}</span></h2>
+    {% if entries %}
+    <div class="entries-grid">
+      {% for entry in entries %}
+      <div class="entry-card">
+        <h3 class="entry-title">{{ entry.title }}</h3>
+        <p class="entry-author">by <strong>{{ entry.username }}</strong></p>
+        <div class="entry-text-preview">{{ entry.text[:200] }}{% if entry.text|length > 200 %}…{% endif %}</div>
+        <p class="entry-date">{{ entry.submitted_at | string | truncate(10, False, "") }}</p>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <p class="empty-state">{{ t("salon", "no_entries") }}</p>
+    {% endif %}
+  </section>
+
+  <!-- Poet Duels -->
+  <section class="salon-section">
+    <h2 class="section-heading">{{ t("salon", "poet_duels") }}</h2>
+
+    {% if session.get("username") %}
+    <details class="duel-challenge-form">
+      <summary class="btn-secondary">⚔ Challenge a Poet</summary>
+      <form method="POST" action="{{ url_for('duel_challenge') }}" class="salon-form">
+        <div class="form-group">
+          <label for="challenged_id">{{ t("salon", "challenge_user") }}</label>
+          <input type="number" id="challenged_id" name="challenged_id" placeholder="User ID…" required>
+        </div>
+        <button type="submit" class="btn-primary">{{ t("salon", "send_challenge") }}</button>
+      </form>
+    </details>
+    {% endif %}
+
+    {% if duels %}
+    <div class="duels-list">
+      {% for duel in duels %}
+      <a href="{{ url_for('duel_detail', duel_id=duel.id) }}" class="duel-row">
+        <span class="duel-names">{{ duel.challenger_name }} <span class="vs">vs</span> {{ duel.challenged_name }}</span>
+        <span class="duel-status duel-status--{{ duel.status }}">{{ duel.status }}</span>
+      </a>
+      {% endfor %}
+    </div>
+    {% else %}
+    <p class="empty-state">{{ t("salon", "no_duels") }}</p>
+    {% endif %}
+  </section>
+
+  {% else %}
+  <div class="no-theme-card">
+    <p>{{ t("salon", "no_active") }}</p>
+  </div>
+  {% endif %}
+
+  <!-- Admin controls -->
+  {% if session.get("is_admin") %}
+  <section class="salon-section admin-section">
+    <h2 class="section-heading">{{ t("salon", "admin_set_theme") }}</h2>
+    <form method="POST" action="{{ url_for('weekly_salon_new_theme') }}" class="salon-form">
+      <div class="form-group">
+        <label for="admin_title">{{ t("salon", "theme_title") }}</label>
+        <input type="text" id="admin_title" name="title" required>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label for="start_date">{{ t("salon", "start_date") }}</label>
+          <input type="date" id="start_date" name="start_date" required>
+        </div>
+        <div class="form-group">
+          <label for="end_date">{{ t("salon", "end_date") }}</label>
+          <input type="date" id="end_date" name="end_date" required>
+        </div>
+      </div>
+      <button type="submit" class="btn-primary">{{ t("salon", "create_theme") }}</button>
+    </form>
+  </section>
+  {% endif %}
+
+  <!-- Past Themes Archive Link -->
+  {% if past_themes %}
+  <section class="salon-section">
+    <h2 class="section-heading">{{ t("salon", "past_themes") }}</h2>
+    <div class="past-themes-list">
+      {% for t in past_themes %}
+      <div class="past-theme-row">
+        <span class="past-theme-title">{{ t.title }}</span>
+        <span class="past-theme-dates">{{ t.start_date }} — {{ t.end_date }}</span>
+      </div>
+      {% endfor %}
+    </div>
+    <a href="{{ url_for('weekly_salon_archive') }}" class="btn-secondary">{{ t("salon", "view_archive") }}</a>
+  </section>
+  {% endif %}
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function() {
+  const el = document.getElementById("countdown");
+  if (!el) return;
+  let secs = parseInt(el.dataset.seconds, 10);
+  function fmt(s) {
+    const d = Math.floor(s / 86400);
+    const h = Math.floor((s % 86400) / 3600);
+    const m = Math.floor((s % 3600) / 60);
+    const sc = s % 60;
+    if (d > 0) return `${d}d ${h}h ${m}m`;
+    return `${h}h ${m}m ${sc}s`;
+  }
+  el.textContent = fmt(secs);
+  const iv = setInterval(() => {
+    secs--;
+    if (secs <= 0) { el.textContent = "Ended"; clearInterval(iv); return; }
+    el.textContent = fmt(secs);
+  }, 1000);
+})();
+</script>
+{% endblock %}

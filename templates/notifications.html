@@ -1,0 +1,227 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="notifications-page">
+    <div class="notifications-header">
+        <h2>{{ t("notifications", "title") }}</h2>
+        {% if notifications %}
+            <button type="button" id="mark-all-btn" class="mark-all-btn">{{ t("notifications", "mark_all_read") }}</button>
+        {% endif %}
+    </div>
+
+    {% if notifications %}
+        <div class="notifications-list">
+            {% for notification in notifications %}
+                <div class="notification-card {% if notification.is_read == 0 %}unread{% endif %}"
+                     id="notif-card-{{ notification.id }}">
+                    <div class="notification-left">
+                        <div class="notification-message">{{ notification.message }}</div>
+                    </div>
+                    <div class="notification-meta">
+                        <span>{{ notification.date }}</span>
+                        {% if notification.is_read == 0 %}
+                            <button type="button" class="mark-read-btn"
+                                    data-id="{{ notification.id }}">
+                                Mark as read
+                            </button>
+                        {% else %}
+                            <span class="read-label">Read</span>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p class="no-notifications">{{ t("notifications", "no_notifications") }}</p>
+    {% endif %}
+</div>
+
+<style>
+.notifications-page {
+    max-width: 860px;
+    margin: 44px auto;
+    padding: 0 22px;
+}
+.notifications-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 28px;
+    padding-bottom: 18px;
+    border-bottom: 1px solid var(--border-soft);
+}
+.notifications-header h2 {
+    font-family: var(--font-display);
+    font-size: clamp(1.4rem, 3vw, 1.9rem);
+    font-weight: 400;
+    letter-spacing: 0.07em;
+    margin: 0;
+}
+.notifications-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+.notification-card {
+    background: var(--cream);
+    border: 1px solid var(--border-soft);
+    border-left: 2px solid var(--border);
+    border-radius: 3px;
+    padding: 16px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    box-shadow: var(--shadow-sm);
+    transition: border-left-color 0.2s;
+}
+.notification-card.unread {
+    border-left-color: var(--sepia);
+    background: var(--vellum);
+}
+.notification-message {
+    font-family: var(--font-body);
+    font-size: 0.97rem;
+    color: var(--ink-soft);
+    line-height: 1.6;
+}
+.notification-meta {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    font-family: var(--font-display);
+    font-size: 0.6rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-muted);
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+.mark-read-btn {
+    background: transparent;
+    border: 1px solid var(--sepia);
+    color: var(--sepia);
+    border-radius: 2px;
+    padding: 5px 12px;
+    font-family: var(--font-display);
+    font-size: 0.58rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: none;
+}
+.mark-read-btn:hover {
+    background: var(--sepia);
+    color: var(--parchment);
+    transform: none;
+}
+.mark-all-btn {
+    background: var(--ink-soft);
+    color: var(--parchment);
+    border: none;
+    border-radius: 2px;
+    padding: 8px 18px;
+    font-family: var(--font-display);
+    font-size: 0.62rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+.mark-all-btn:hover { background: var(--sepia); }
+.read-label {
+    color: var(--ink-muted);
+    font-style: italic;
+}
+.no-notifications {
+    text-align: center;
+    margin-top: 60px;
+    font-family: var(--font-serif);
+    font-style: italic;
+    color: var(--ink-muted);
+    font-size: 1rem;
+}
+@media (max-width: 600px) {
+    .notification-card { flex-direction: column; align-items: flex-start; }
+    .notification-meta { flex-wrap: wrap; }
+}
+</style>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+
+    // Mark single notification as read
+    document.querySelectorAll(".mark-read-btn").forEach(button => {
+        button.addEventListener("click", async () => {
+            const notificationId = button.dataset.id;
+            const card = document.getElementById("notif-card-" + notificationId);
+
+            try {
+                const res  = await fetch(`/notifications/read/${notificationId}`, {
+                    method: "POST",
+                    headers: { "X-Requested-With": "XMLHttpRequest" }
+                });
+                const data = await res.json();
+
+                if (data.success) {
+                    card && card.classList.remove("unread");
+
+                    const meta    = button.parentElement;
+                    const label   = document.createElement("span");
+                    label.className   = "read-label";
+                    label.textContent = "Read";
+                    button.replaceWith(label);
+
+                    decrementBadge();
+                }
+            } catch (err) {
+                console.error("Error marking notification as read:", err);
+            }
+        });
+    });
+
+    // Mark all as read
+    const markAllBtn = document.getElementById("mark-all-btn");
+    if (markAllBtn) {
+        markAllBtn.addEventListener("click", async () => {
+            try {
+                const res  = await fetch("/notifications/read_all", {
+                    method: "POST",
+                    headers: { "X-Requested-With": "XMLHttpRequest" }
+                });
+                const data = await res.json();
+
+                if (data.success) {
+                    document.querySelectorAll(".notification-card").forEach(card => {
+                        card.classList.remove("unread");
+                    });
+                    document.querySelectorAll(".mark-read-btn").forEach(btn => {
+                        const label   = document.createElement("span");
+                        label.className   = "read-label";
+                        label.textContent = "Read";
+                        btn.replaceWith(label);
+                    });
+
+                    const badge = document.querySelector(".notif-badge");
+                    if (badge) badge.remove();
+
+                    markAllBtn.remove();
+                }
+            } catch (err) {
+                console.error("Error marking all notifications as read:", err);
+            }
+        });
+    }
+
+    function decrementBadge() {
+        const badge = document.querySelector(".notif-badge");
+        if (!badge) return;
+        const count = Math.max(0, (parseInt(badge.textContent, 10) || 0) - 1);
+        if (count === 0) badge.remove();
+        else badge.textContent = count;
+    }
+});
+</script>
+
+{% endblock %}

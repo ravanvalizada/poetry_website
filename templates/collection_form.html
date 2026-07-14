@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}{{ t("collections", "new_title") }}{% endblock %}
+{% block content %}
+<div class="collection-form-page">
+    <div class="form-header">
+        <h2>{{ t("collections", "new_title") }}</h2>
+        <a href="{{ url_for('my_collections') }}" class="back-link">← {{ t("common", "back") }}</a>
+    </div>
+
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            {% for msg in messages %}<div class="flash-msg error">{{ msg }}</div>{% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <form method="post" class="collection-form">
+        <div class="form-group">
+            <label for="name">{{ t("collections", "name") }} *</label>
+            <input type="text" id="name" name="name" placeholder="e.g. Love Poems, Midnight Thoughts…" required maxlength="100">
+        </div>
+        <div class="form-group">
+            <label for="description">{{ t("collections", "description") }} <span class="optional">({{ t("collections", "optional") }})</span></label>
+            <textarea id="description" name="description" rows="3" placeholder="…" maxlength="300"></textarea>
+        </div>
+        <div class="form-group checkbox-group">
+            <label>
+                <input type="checkbox" name="is_public" checked>
+                {{ t("collections", "public_hint") }}
+            </label>
+        </div>
+        <button type="submit" class="submit-btn">{{ t("collections", "create_btn") }}</button>
+    </form>
+</div>
+
+<style>
+.collection-form-page { max-width: 560px; margin: 2rem auto; padding: 0 1rem; }
+.form-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
+.form-header h2 { font-size: 1.6rem; }
+.back-link { color: var(--accent, #8b4513); text-decoration: none; font-size: 0.9rem; }
+.collection-form { background: var(--card-bg, #fdf6ec); border: 1px solid var(--border, #d9c8a0); border-radius: 10px; padding: 1.8rem; }
+.form-group { margin-bottom: 1.2rem; }
+.form-group label { display: block; font-weight: 600; margin-bottom: 0.4rem; }
+.form-group .optional { font-weight: 400; color: var(--muted, #888); font-size: 0.85rem; }
+.form-group input[type="text"], .form-group textarea { width: 100%; padding: 0.6rem 0.8rem; border: 1px solid var(--border, #d9c8a0); border-radius: 6px; background: var(--input-bg, #fff); color: var(--text, #333); font-family: inherit; font-size: 1rem; box-sizing: border-box; }
+.form-group textarea { resize: vertical; }
+.checkbox-group label { display: flex; align-items: center; gap: 0.5rem; font-weight: 400; cursor: pointer; }
+.submit-btn { background: var(--accent, #8b4513); color: #fff; border: none; padding: 0.7rem 1.6rem; border-radius: 8px; font-size: 1rem; cursor: pointer; margin-top: 0.5rem; }
+.submit-btn:hover { opacity: 0.9; }
+.flash-msg.error { background: #fdecea; border-color: #f5a5a0; padding: 0.6rem 1rem; border-radius: 6px; margin-bottom: 1rem; }
+</style>
+{% endblock %}

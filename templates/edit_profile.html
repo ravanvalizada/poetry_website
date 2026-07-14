@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block content %}
+
+<form id="edit-profile-form" enctype="multipart/form-data" class="edit-profile-form">
+    <h2>{{ t("profile", "edit_title") }}</h2>
+
+    <p id="edit-profile-msg" class="form-success" style="display:none;"></p>
+
+    <label for="username">{{ t("auth", "username") }}</label>
+    <input type="text" id="username" name="username"
+           value="{{ user.username }}" required autocomplete="username">
+
+    <label for="profile_picture">{{ t("profile", "edit") }}</label>
+    <input type="file" id="profile_picture" name="profile_picture" accept="image/*">
+
+    <div style="display:flex; gap:12px; margin-top:8px;">
+        <button type="submit">{{ t("profile", "save_changes") }}</button>
+        <button type="button" id="remove-photo-btn"
+                style="background:transparent; border:1px solid var(--border);
+                       color:var(--ink-muted);">
+            {{ t("profile", "remove_photo") }}
+        </button>
+    </div>
+</form>
+
+<script>
+const form    = document.getElementById("edit-profile-form");
+const msgEl   = document.getElementById("edit-profile-msg");
+
+function showMsg(text, isError) {
+    msgEl.textContent  = text;
+    msgEl.className    = isError ? "form-error" : "form-success";
+    msgEl.style.display = "block";
+}
+
+form.addEventListener("submit", async function(e) {
+    e.preventDefault();
+    const formData = new FormData(form);
+    try {
+        const res  = await fetch("/edit_profile", { method: "POST", body: formData });
+        const data = await res.json();
+        if (data.success) {
+            showMsg("{{ t('common', 'success') }}", false);
+        } else {
+            showMsg(data.error || "{{ t('common', 'error') }}", true);
+        }
+    } catch {
+        showMsg("{{ t('common', 'error') }}", true);
+    }
+});
+
+document.getElementById("remove-photo-btn").addEventListener("click", async function() {
+    if (!confirm("{{ t('profile', 'remove_photo') }}?")) return;
+    try {
+        const res  = await fetch("/remove_profile_photo", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({})
+        });
+        const data = await res.json();
+        if (data.success) {
+            showMsg("{{ t('common', 'success') }}", false);
+        } else {
+            showMsg(data.error || "{{ t('common', 'error') }}", true);
+        }
+    } catch {
+        showMsg("{{ t('common', 'error') }}", true);
+    }
+});
+</script>
+
+{% endblock %}

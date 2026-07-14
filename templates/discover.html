@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+{% block title %}Discover Poems{% endblock %}
+{% block content %}
+<div class="discover-page">
+
+  <div class="discover-hero">
+    <h2>{{ t("discover", "title") }}</h2>
+    <p>{{ t("discover", "subtitle") }}</p>
+  </div>
+
+  {% if trending %}
+  <section class="discover-section">
+    <h3 class="ds-title">{{ t("discover", "trending") }}</h3>
+    <div class="discover-scroll">
+      {% for poem in trending %}
+      <a href="{{ url_for('poem_detail', poem_id=poem.id) }}" class="dc-card">
+        <span class="dc-genre">{{ poem.genre }}</span>
+        <h4 class="dc-title">{{ poem.title }}</h4>
+        <p class="dc-author">{{ poem.author }}</p>
+        <div class="dc-stats">
+          <span>👁 {{ poem.view_count or 0 }}</span>
+          <span>❤ {{ poem.like_count or 0 }}</span>
+          <span>🔖 {{ poem.save_count or 0 }}</span>
+        </div>
+        <p class="dc-preview">{{ poem.text[:110] }}…</p>
+      </a>
+      {% endfor %}
+    </div>
+  </section>
+  {% endif %}
+
+  {% if following_poems %}
+  <section class="discover-section">
+    <h3 class="ds-title">{{ t("discover", "from_following") }}</h3>
+    <div class="discover-grid">
+      {% for poem in following_poems %}
+      <a href="{{ url_for('poem_detail', poem_id=poem.id) }}" class="dc-card-sm">
+        <span class="dc-genre">{{ poem.genre }}</span>
+        <h4 class="dc-title">{{ poem.title }}</h4>
+        <p class="dc-author">{{ poem.author }}</p>
+      </a>
+      {% endfor %}
+    </div>
+  </section>
+  {% endif %}
+
+  {% if recommended %}
+  <section class="discover-section">
+    <h3 class="ds-title">💡 You Might Like</h3>
+    <p class="ds-hint">{{ t("discover", "based_on_genres") }}</p>
+    <div class="discover-grid">
+      {% for poem in recommended %}
+      <a href="{{ url_for('poem_detail', poem_id=poem.id) }}" class="dc-card-sm">
+        <span class="dc-genre">{{ poem.genre }}</span>
+        <h4 class="dc-title">{{ poem.title }}</h4>
+        <p class="dc-author">{{ poem.author }}</p>
+      </a>
+      {% endfor %}
+    </div>
+  </section>
+  {% elif not current_user_id %}
+  <div class="discover-login-hint">
+    💡 <a href="{{ url_for('login') }}">Log in</a> to get personalised poem recommendations.
+  </div>
+  {% endif %}
+
+  {% if new_poems %}
+  <section class="discover-section">
+    <h3 class="ds-title">{{ t("discover", "new_arrivals") }}</h3>
+    <div class="discover-grid">
+      {% for poem in new_poems %}
+      <a href="{{ url_for('poem_detail', poem_id=poem.id) }}" class="dc-card-sm">
+        <span class="dc-genre">{{ poem.genre }}</span>
+        <h4 class="dc-title">{{ poem.title }}</h4>
+        <p class="dc-author">{{ poem.author }}</p>
+      </a>
+      {% endfor %}
+    </div>
+  </section>
+  {% endif %}
+
+</div>
+
+<style>
+.discover-page { max-width: 1020px; margin: 0 auto; padding: 32px 20px 60px; }
+.discover-hero { text-align: center; padding: 40px 0 32px; }
+.discover-hero h2 { font-size: clamp(2rem,5vw,3rem); letter-spacing: .08em; margin: 0 0 8px; }
+.discover-hero p  { font-family: var(--font-serif); font-style: italic; color: var(--ink-muted); font-size: 1.05rem; margin: 0; }
+.discover-section { margin-bottom: 48px; }
+.ds-title { font-size: 1.1rem; letter-spacing: .08em; margin: 0 0 4px; }
+.ds-hint  { margin: 0 0 14px; font-family: var(--font-serif); font-style: italic; color: var(--ink-muted); font-size: .9rem; }
+/* Horizontal scroll row */
+.discover-scroll { display: flex; gap: 16px; overflow-x: auto; padding-bottom: 8px;}
+.discover-scroll::-webkit-scrollbar { height: 4px; }
+.discover-scroll::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+/* Grid */
+.discover-grid { display: grid; grid-template-columns: repeat(auto-fill,minmax(180px,1fr)); gap: 14px; }
+/* Large card (scroll) */
+.dc-card { flex-shrink: 0; width: 210px; background: var(--vellum); border: 1px solid var(--border-soft); border-radius: 3px; padding: 18px; text-decoration: none; color: var(--ink); display: flex; flex-direction: column; gap: 6px; transition: box-shadow .2s, transform .1s; }
+.dc-card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
+/* Small card (grid) */
+.dc-card-sm { background: var(--vellum); border: 1px solid var(--border-soft); border-radius: 3px; padding: 14px 16px; text-decoration: none; color: var(--ink); display: flex; flex-direction: column; gap: 4px; transition: box-shadow .2s, transform .1s; }
+.dc-card-sm:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
+/* Shared elements */
+.dc-genre  { font-family: var(--font-display); font-size: .52rem; letter-spacing: .1em; text-transform: uppercase; color: var(--sepia); }
+.dc-title  { margin: 0; font-size: .97rem; font-weight: 600; line-height: 1.3; }
+.dc-author { margin: 0; font-size: .82rem; color: var(--ink-muted); }
+.dc-stats  { display: flex; gap: 10px; font-family: var(--font-display); font-size: .52rem; letter-spacing: .06em; color: var(--ink-muted); text-transform: uppercase; }
+.dc-preview { margin: 0; font-family: var(--font-serif); font-style: italic; font-size: .85rem; color: var(--ink-muted); line-height: 1.5; display: -webkit-box; -webkit-box-orient: vertical; overflow: hidden; }
+.discover-login-hint { background: var(--vellum); border: 1px solid var(--border-soft); padding: 16px 20px; margin-bottom: 36px; font-family: var(--font-serif); font-style: italic; color: var(--ink-muted); border-radius: 3px; }
+.discover-login-hint a { color: var(--sepia); }
+</style>
+{% endblock %}

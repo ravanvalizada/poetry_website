@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block content %}
+
+<form method="post" class="auth-form">
+    <h2>{{ t("auth", "register_title") }}</h2>
+
+    {% if error %}
+        <p class="form-error">{{ error }}</p>
+    {% endif %}
+
+    <label for="email">{{ t("auth", "email") }}</label>
+    <input id="email" name="email" type="email" placeholder="{{ t('auth', 'email') }}"
+           autocomplete="email" required>
+
+    <label for="username">{{ t("auth", "username") }}</label>
+    <input id="username" name="username" placeholder="{{ t('auth', 'username') }}"
+           autocomplete="username" required>
+
+    <label for="password">{{ t("auth", "password") }}</label>
+    <input id="password" type="password" name="password"
+           placeholder="{{ t('auth', 'weak_password') }}"
+           autocomplete="new-password" required>
+
+    <button type="submit">{{ t("auth", "register_btn") }}</button>
+
+    <p class="auth-link">
+        {{ t("auth", "have_account") }} <a href="{{ url_for('login') }}">{{ t("auth", "login_btn") }}</a>
+    </p>
+</form>
+
+{% endblock %}

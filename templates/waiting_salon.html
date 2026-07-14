@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="waiting-salon-page">
+    <div class="waiting-header">
+        <h1>{{ t("nav", "waiting_salon") }}</h1>
+        <p>{{ t("waiting_salon", "subtitle") }}</p>
+    </div>
+
+    {% if not is_admin and avg_rating <= 4.5 %}
+        <div class="rating-notice">
+            {{ t("waiting_salon", "rating_notice") }} <strong>{{ avg_rating }}</strong>.
+        </div>
+    {% endif %}
+
+    {% if poems %}
+        {% for poem in poems %}
+            <div class="waiting-poem">
+                <h3>
+                    <a href="{{ url_for('waiting_poem_detail', poem_id=poem.id) }}">
+                        {{ poem.title }}
+                    </a>
+                </h3>
+                <p class="meta">by <strong>{{ poem.author }}</strong> · {{ poem.date }}</p>
+                <p class="poem-preview-text">{{ poem.text[:280] }}{% if poem.text|length > 280 %}…{% endif %}</p>
+
+                {% if session.get('user_id') == poem.user_id %}
+                    <p class="own-poem-note">⛔ You cannot approve or reject your own poem.</p>
+                {% elif is_admin or avg_rating > 4.5 %}
+                    <div class="waiting-actions">
+                        <form method="post" action="{{ url_for('approve_poem', poem_id=poem.id) }}">
+                            <button type="submit" class="approve-btn">{{ t("poem", "approve") }}</button>
+                        </form>
+                        <form method="post" action="{{ url_for('reject_poem', poem_id=poem.id) }}">
+                            <button type="submit" class="reject-btn">{{ t("poem", "reject") }}</button>
+                        </form>
+                    </div>
+                {% else %}
+                    <p class="info-note">{{ t("poem", "low_rating_note") }}</p>
+                {% endif %}
+            </div>
+        {% endfor %}
+    {% else %}
+        <p class="no-poems-note">{{ t("poem", "no_poems") }}</p>
+    {% endif %}
+</div>
+
+<style>
+.own-poem-note {
+    font-family: var(--font-serif);
+    font-style: italic;
+    font-size: 0.88rem;
+    color: #8c2a1a;
+    margin-top: 12px;
+}
+.info-note {
+    font-family: var(--font-serif);
+    font-style: italic;
+    font-size: 0.88rem;
+    color: var(--ink-muted);
+    margin-top: 12px;
+}
+.no-poems-note {
+    font-family: var(--font-serif);
+    font-style: italic;
+    color: var(--ink-muted);
+    text-align: center;
+    margin-top: 40px;
+}
+.poem-preview-text {
+    font-family: var(--font-serif);
+    font-style: italic;
+    font-size: 0.93rem;
+    color: var(--ink-muted);
+    line-height: 1.75;
+    margin: 10px 0;
+}
+</style>
+
+{% endblock %}

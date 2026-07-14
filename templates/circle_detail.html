@@ -1,0 +1,249 @@
+{% extends "base.html" %}
+{% block title %}{{ circle.name }}{% endblock %}
+{% block content %}
+<div class="circle-detail-page">
+
+  <div class="circle-header">
+    <h1 class="circle-detail-name">{{ circle.name }}</h1>
+    {% if circle.description %}<p class="circle-detail-desc">{{ circle.description }}</p>{% endif %}
+    <p class="circle-detail-meta">
+      Hosted by <strong>{{ circle.owner_name }}</strong> ·
+      {{ members|length }} member{{ 's' if members|length != 1 }}
+    </p>
+    <span class="circle-role-badge circle-role--{{ role }}">You are: {{ role|title }}</span>
+    {% if role != 'owner' %}
+    <form method="POST" action="{{ url_for('circle_leave', circle_id=circle.id) }}" class="leave-circle-form" onsubmit="return confirm('Leave this circle?')">
+      <button type="submit" class="btn-danger btn-sm">{{ t("salon", "leave_circle") }}</button>
+    </form>
+    {% endif %}
+  </div>
+
+  <div class="circle-layout">
+    <div class="circle-feed-col">
+      <div class="circle-post-form-card">
+        <h3 class="card-subheading">{{ t("salon", "share_something") }}</h3>
+        <form method="POST" action="{{ url_for('circle_post', circle_id=circle.id) }}">
+          <div class="form-group">
+            <label for="post_body">{{ t("salon", "your_message") }}</label>
+            <textarea id="post_body" name="body" rows="3" placeholder="Write a thought, share a line…"></textarea>
+          </div>
+          <div class="form-group poem-link-group">
+              <label for="poem_search">{{ t("salon", "link_poem_optional") }}</label>
+
+              <input
+                  type="text"
+                  id="poem_search"
+                  name="poem_search"
+                  class="poem-search-input"
+                  placeholder="Search poem title..."
+                  autocomplete="off">
+
+              <input type="hidden" id="selected_poem_id" name="poem_id">
+
+              <div id="poem_results" class="poem-search-results hidden"></div>
+              <div id="selected_poem_preview" class="selected-poem-preview hidden"></div>
+          </div>
+          <button type="submit" class="btn-primary btn-sm">{{ t("salon", "post_btn") }}</button>
+        </form>
+      </div>
+
+      <div class="circle-posts">
+        {% if posts %}
+          {% for post in posts %}
+          <div class="circle-post {% if post.is_pinned %}circle-post--pinned{% endif %}">
+            {% if post.is_pinned %}<span class="pin-badge">📌 Pinned</span>{% endif %}
+            <div class="post-header">
+              <a href="{{ url_for('profile', user_id=post.user_id) }}" class="post-author">{{ post.username }}</a>
+              <span class="post-date">{{ post.posted_at | string | truncate(16, False, "") }}</span>
+              {% if role in ('owner', 'admin') %}
+              <form method="POST" action="{{ url_for('circle_pin', circle_id=circle.id, post_id=post.id) }}" class="pin-form">
+                <button type="submit" class="btn-ghost btn-xs">{{ '📌 Unpin' if post.is_pinned else '📌 Pin' }}</button>
+              </form>
+              {% endif %}
+            </div>
+            {% if post.body %}<p class="post-body">{{ post.body }}</p>{% endif %}
+            {% if post.poem_id and post.poem_title %}
+            <div class="post-poem-preview">
+              <a href="{{ url_for('poem_detail', poem_id=post.poem_id) }}" class="post-poem-link">
+                <strong>{{ post.poem_title }}</strong>
+                <span class="post-poem-author">by {{ post.poem_author }}</span>
+              </a>
+              <p class="post-poem-excerpt">{{ post.poem_text[:120] }}…</p>
+            </div>
+            {% endif %}
+          </div>
+          {% endfor %}
+        {% else %}
+          <p class="empty-state">{{ t("salon", "no_posts") }}</p>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="circle-sidebar">
+      <div class="circle-members-card">
+        <h3 class="card-subheading">{{ t("salon", "members") }}</h3>
+        {% if role in ('owner', 'admin') %}
+        <form method="POST" action="{{ url_for('circle_invite', circle_id=circle.id) }}" class="invite-form">
+          <input type="text" name="username" placeholder="Invite by username…" required>
+          <button type="submit" class="btn-primary btn-sm">{{ t("salon", "invite") }}</button>
+        </form>
+        {% endif %}
+        <ul class="members-list">{% for m in members %}<li class="member-item"><a href="{{ url_for('profile', user_id=m.user_id) }}" class="member-name">{{ m.username }}</a><span class="circle-role-badge circle-role--{{ m.role }}">{{ m.role }}</span></li>{% endfor %}</ul>
+      </div>
+
+      <div class="circle-chat-card">
+        <h3 class="card-subheading">{{ t("salon", "group_chat") }}</h3>
+        <div class="circle-chat-messages" id="circleChat" data-circle-id="{{ circle.id }}">
+          {% for msg in messages %}
+          <div class="circle-chat-msg {% if msg.user_id == session.get('user_id') %}circle-chat-msg--mine{% endif %}">
+            <span class="circle-chat-author">{{ msg.username }}</span>
+            <span class="circle-chat-text">{{ msg.message }}</span>
+            <span class="circle-chat-time">{{ msg.sent_at[11:16] }}</span>
+          </div>
+          {% endfor %}
+        </div>
+        <form method="POST" action="{{ url_for('circle_message', circle_id=circle.id) }}" class="circle-chat-form" id="circleChatForm">
+          <input type="text" name="message" id="circleChatInput" placeholder="Send a message…" autocomplete="off" required>
+          <button type="submit" class="btn-primary btn-sm">Send</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <a href="{{ url_for('circles') }}" class="back-link">← Back to Circles</a>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Read current user ID from <body data-current-user-id="..."> set in base.html
+// Never use Jinja expressions inside <script> — causes JS linter errors
+var CURRENT_USER_ID_CIRCLE = Number(document.body.dataset.currentUserId) || null;
+
+var chat = document.getElementById("circleChat");
+if (chat) { chat.scrollTop = chat.scrollHeight; }
+
+var circleId = chat ? chat.dataset.circleId : null;
+
+function escapeHtmlCircle(s) {
+  var d = document.createElement("div");
+  d.textContent = String(s);
+  return d.innerHTML;
+}
+
+function renderMessages(messages) {
+  if (!chat) { return; }
+  var html = "";
+  for (var i = 0; i < messages.length; i++) {
+    var m = messages[i];
+    var mine = Number(m.user_id) === CURRENT_USER_ID_CIRCLE;
+    html += '<div class="circle-chat-msg' + (mine ? ' circle-chat-msg--mine' : '') + '">'
+          + '<span class="circle-chat-author">' + escapeHtmlCircle(m.username) + '</span>'
+          + '<span class="circle-chat-text">' + escapeHtmlCircle(m.message) + '</span>'
+          + '<span class="circle-chat-time">' + escapeHtmlCircle(m.sent_at.substring(11, 16)) + '</span>'
+          + '</div>';
+  }
+  chat.innerHTML = html;
+  chat.scrollTop = chat.scrollHeight;
+}
+
+if (circleId) {
+  setInterval(function() {
+    fetch("/circles/" + circleId + "/messages/api")
+      .then(function(r) { return r.json(); })
+      .then(function(data) { renderMessages(data.messages); })
+      .catch(function() {});
+  }, 5000);
+}
+</script>
+<script>
+const poemSearch = document.getElementById("poem_search");
+const poemResults = document.getElementById("poem_results");
+const selectedPoemId = document.getElementById("selected_poem_id");
+const selectedPoemPreview = document.getElementById("selected_poem_preview");
+
+let poemSearchTimer = null;
+
+function clearSelectedPoem() {
+    selectedPoemId.value = "";
+    poemSearch.value = "";
+    selectedPoemPreview.innerHTML = "";
+    selectedPoemPreview.classList.add("hidden");
+}
+
+if (poemSearch) {
+    poemSearch.addEventListener("input", () => {
+        const q = poemSearch.value.trim();
+
+        selectedPoemId.value = "";
+        selectedPoemPreview.innerHTML = "";
+        selectedPoemPreview.classList.add("hidden");
+
+        clearTimeout(poemSearchTimer);
+
+        if (q.length < 2) {
+            poemResults.innerHTML = "";
+            poemResults.classList.add("hidden");
+            return;
+        }
+
+        poemSearchTimer = setTimeout(async () => {
+            try {
+                const res = await fetch(`/search_poems?q=${encodeURIComponent(q)}`);
+                const poems = await res.json();
+
+                if (!poems.length) {
+                    poemResults.innerHTML = `<div class="poem-result-item">No poems found.</div>`;
+                    poemResults.classList.remove("hidden");
+                    return;
+                }
+
+                poemResults.innerHTML = poems.map(poem => `
+                    <div class="poem-result-item"
+                         data-id="${poem.id}"
+                         data-title="${poem.title}"
+                         data-author="${poem.author}">
+                        <div class="poem-result-title">${poem.title}</div>
+                        <div class="poem-result-author">by ${poem.author}</div>
+                    </div>
+                `).join("");
+
+                poemResults.classList.remove("hidden");
+            } catch (err) {
+                console.error("Poem search error:", err);
+            }
+        }, 250);
+    });
+
+    poemResults.addEventListener("click", (e) => {
+        const item = e.target.closest(".poem-result-item");
+        if (!item || !item.dataset.id) return;
+
+        const poemId = item.dataset.id;
+        const poemTitle = item.dataset.title;
+        const poemAuthor = item.dataset.author;
+
+        selectedPoemId.value = poemId;
+        poemSearch.value = poemTitle;
+
+        poemResults.innerHTML = "";
+        poemResults.classList.add("hidden");
+
+        selectedPoemPreview.innerHTML = `
+            <div class="selected-poem-title">${poemTitle}</div>
+            <div class="selected-poem-meta">by ${poemAuthor}</div>
+            <button type="button" class="selected-poem-clear" id="clear_selected_poem">Remove selection</button>
+        `;
+        selectedPoemPreview.classList.remove("hidden");
+
+        document.getElementById("clear_selected_poem").addEventListener("click", clearSelectedPoem);
+    });
+
+    document.addEventListener("click", (e) => {
+        if (!e.target.closest(".poem-link-group")) {
+            poemResults.classList.add("hidden");
+        }
+    });
+}
+</script>
+{% endblock %}

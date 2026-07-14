@@ -1,0 +1,153 @@
+{% extends "base.html" %}
+{% block content %}
+
+<section class="owner-section">
+    <div class="name-photo-row">
+        <span class="owner-name left">Ravan</span>
+        <img src="{{ url_for('static', filename='owner.jpeg') }}"
+             alt="Owner portrait" class="owner-photo">
+        <span class="owner-name right">Vali</span>
+    </div>
+    <p class="owner-description">{{ t("home", "owner_description") }}</p>
+    <p class="owner-welcome">{{ t("home", "welcome_read") }}</p>
+    <p class="owner-welcome">{{ t("home", "welcome_linger") }}</p>
+    <p class="owner-welcome">{{ t("home", "welcome_leave") }}</p>
+</section>
+
+<section class="recent-poems" id="recent-poems">
+    <h2 class="section-title">{{ t("home", "recent_poems") }}</h2>
+    <div class="poem-grid">
+        {% for poem in poems %}
+        <article class="poem-preview">
+            <h3><a href="{{ url_for('poem_detail', poem_id=poem.id) }}">{{ poem.title }}</a></h3>
+            <p class="meta">by {{ poem.author }} · {{ poem.date }}</p>
+        </article>
+        {% endfor %}
+    </div>
+</section>
+
+<div class="filter-section-wrapper">
+    <div class="filter-buttons">
+        <button class="filter-btn active" data-period="week">{{ t("home", "filter_week") }}</button>
+        <button class="filter-btn" data-period="month">{{ t("home", "filter_month") }}</button>
+        <button class="filter-btn" data-period="year">{{ t("home", "filter_year") }}</button>
+        <button class="filter-btn" data-period="all">{{ t("home", "filter_all_time") }}</button>
+    </div>
+</div>
+
+<section class="top-content" id="top-content">
+    <div class="top-poem-author-container">
+
+        <div class="top-poem-card">
+            <h2 id="top-poem-heading">{{ t("home", "top_poem") }}</h2>
+            {% if top_poem %}
+                <h3>
+                    <a href="{{ url_for('poem_detail', poem_id=top_poem.id) }}"
+                       class="top-poem-title">{{ top_poem.title }}</a>
+                </h3>
+                <pre class="poem-excerpt">{{ top_poem.text }}</pre>
+                <p class="meta top-poem-meta">by {{ top_poem.author }}</p>
+                <p class="top-poem-rating">
+                    {% if top_poem.avg_rating %}
+                        ⭐ Average rating: {{ "%.1f"|format(top_poem.avg_rating) }}
+                    {% endif %}
+                </p>
+            {% else %}
+                <p class="empty-period">No poems available for this period.</p>
+            {% endif %}
+        </div>
+
+        <div class="top-author-card">
+            <h2 id="top-author-heading">{{ t("home", "top_author") }}</h2>
+            {% if top_author %}
+                <img src="{{ url_for('static', filename='uploads/' ~ (top_author.profile_picture if top_author.profile_picture else 'default_avatar.jpg')) }}"
+                     class="author-avatar" alt="Author avatar">
+                <h3>
+                    <a href="{{ url_for('profile', user_id=top_author.id) }}"
+                       class="top-author-name">{{ top_author.username }}</a>
+                </h3>
+                <p class="top-author-poems">{{ top_author.total_poems }} published poems</p>
+                <p class="top-author-rating">
+                    {% if top_author.avg_rating %}
+                        ⭐ Average rating: {{ "%.1f"|format(top_author.avg_rating) }}
+                    {% endif %}
+                </p>
+            {% else %}
+                <p class="empty-period">No authors available for this period.</p>
+            {% endif %}
+        </div>
+
+    </div>
+</section>
+
+<script>
+const I18N = {
+    top_poem:   "{{ t('home', 'top_poem') }}",
+    top_author: "{{ t('home', 'top_author') }}",
+    no_poems:   "{{ t('poem', 'no_poems') }}",
+    no_authors: "{{ t('home', 'no_poems') }}",
+    avg_rating: "{{ t('poem', 'avg_rating') }}",
+    published:  "{{ t('poem', 'published') }}",
+};
+
+document.addEventListener('DOMContentLoaded', () => {
+    const buttons          = document.querySelectorAll('.filter-btn');
+    const topPoemHeading   = document.getElementById('top-poem-heading');
+    const topAuthorHeading = document.getElementById('top-author-heading');
+    const topPoemCard      = document.querySelector('.top-poem-card');
+    const topAuthorCard    = document.querySelector('.top-author-card');
+
+    if (!buttons.length) return;
+
+    buttons.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const period = btn.dataset.period;
+            buttons.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+
+            topPoemHeading.textContent   = I18N.top_poem;
+            topAuthorHeading.textContent = I18N.top_author;
+
+            fetch(`/filter_top?period=${period}`)
+                .then(r => r.json())
+                .then(data => {
+                    if (data.top_poem) {
+                        const p = data.top_poem;
+                        topPoemCard.innerHTML = `
+                            <h2 id="top-poem-heading">${I18N.top_poem}</h2>
+                            <h3><a href="/poem/${p.id}" class="top-poem-title">${p.title}</a></h3>
+                            <pre class="poem-excerpt">${p.text}</pre>
+                            <p class="meta top-poem-meta">by ${p.author}</p>
+                            <p class="top-poem-rating">${p.avg_rating ? '⭐ ' + I18N.avg_rating + ': ' + parseFloat(p.avg_rating).toFixed(1) : ''}</p>
+                        `;
+                    } else {
+                        topPoemCard.innerHTML = `
+                            <h2 id="top-poem-heading">${I18N.top_poem}</h2>
+                            <p class="empty-period">${I18N.no_poems}</p>
+                        `;
+                    }
+
+                    if (data.top_author) {
+                        const a = data.top_author;
+                        const pic = a.profile_picture ? `/static/uploads/${a.profile_picture}` : '/static/uploads/default_avatar.jpg';
+                        topAuthorCard.innerHTML = `
+                            <h2 id="top-author-heading">${I18N.top_author}</h2>
+                            <img src="${pic}" class="author-avatar" alt="Author avatar">
+                            <h3><a href="/profile/${a.id}" class="top-author-name">${a.username}</a></h3>
+                            <p class="top-author-poems">${a.total_poems} ${I18N.published}</p>
+                            <p class="top-author-rating">${a.avg_rating ? '⭐ ' + I18N.avg_rating + ': ' + parseFloat(a.avg_rating).toFixed(1) : ''}</p>
+                        `;
+                    } else {
+                        topAuthorCard.innerHTML = `
+                            <h2 id="top-author-heading">${I18N.top_author}</h2>
+                            <p class="empty-period">${I18N.no_authors}</p>
+                        `;
+                    }
+                })
+                .catch(err => console.error('Filter error:', err));
+        });
+    });
+});
+</script>
+
+{% endblock %}

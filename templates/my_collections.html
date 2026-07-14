@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block title %}{{ t("collections", "my_title") }}{% endblock %}
+{% block content %}
+<div class="feature-page">
+  <div class="feature-page-head">
+    <div>
+      <h2>{{ t("collections", "my_title") }}</h2>
+      <p class="feature-page-sub">{{ t("collections", "my_sub") }}</p>
+    </div>
+    <div class="head-actions">
+      <a href="{{ url_for('explore_collections') }}" class="back-btn">{{ t("collections", "explore_title") }}</a>
+      <a href="{{ url_for('new_collection') }}" class="salon-btn-link">{{ t("collections", "new_btn") }}</a>
+    </div>
+  </div>
+
+  {% with msgs = get_flashed_messages() %}{% if msgs %}
+    {% for m in msgs %}<div class="salon-flash">{{ m }}</div>{% endfor %}
+  {% endif %}{% endwith %}
+
+  {% if collections %}
+  <div class="coll-grid">
+    {% for col in collections %}
+    <a href="{{ url_for('collection_detail', cid=col.id) }}" class="coll-card">
+      <div class="coll-card-icon">📖</div>
+      <div class="coll-card-body">
+        <h3 class="coll-card-name">{{ col.name }}</h3>
+        {% if col.description %}
+        <p class="coll-card-desc">{{ col.description[:90] }}{% if col.description|length > 90 %}…{% endif %}</p>
+        {% endif %}
+        <div class="coll-card-meta">
+          <span>{{ col.poem_count }} {{ t("collections", "poems_count") if col.poem_count != 1 else t("collections", "poem_count") }}</span>
+          <span class="coll-vis-badge">{{ t("collections", "public_badge") if col.is_public else t("collections", "private_badge") }}</span>
+        </div>
+      </div>
+    </a>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="empty-salon">
+    <p>{{ t("collections", "no_mine") }}</p>
+    <a href="{{ url_for('new_collection') }}" class="salon-btn-link" style="margin-top:16px;display:inline-block;">{{ t("collections", "create_first") }} →</a>
+  </div>
+  {% endif %}
+</div>
+
+<style>
+.feature-page { max-width: 900px; margin: 0 auto; padding: 32px 20px 60px; }
+.feature-page-head { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 32px; gap: 16px; flex-wrap: wrap; }
+.feature-page-head h2 { font-size: clamp(1.4rem,3vw,2rem); margin: 0 0 4px; }
+.feature-page-sub { margin: 0; color: var(--ink-muted); font-family: var(--font-serif); font-style: italic; }
+.head-actions { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+.back-btn { display: inline-block; padding: 7px 14px; border: 1px solid var(--border); border-radius: 2px; font-family: var(--font-display); font-size: .58rem; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-soft); text-decoration: none; transition: background .15s; }
+.back-btn:hover { background: var(--parchment-mid); }
+.salon-btn-link { display: inline-block; padding: 7px 16px; background: var(--ink-soft); color: var(--parchment); border: none; border-radius: 2px; font-family: var(--font-display); font-size: .58rem; letter-spacing: .12em; text-transform: uppercase; text-decoration: none; transition: background .2s; }
+.salon-btn-link:hover { background: var(--sepia); color: var(--parchment); }
+.salon-flash { background: var(--vellum); border-left: 3px solid var(--sepia); padding: 10px 16px; margin-bottom: 20px; font-size: .95rem; color: var(--ink); }
+.coll-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px,1fr)); gap: 16px; }
+.coll-card { display: flex; gap: 14px; background: var(--vellum); border: 1px solid var(--border-soft); border-radius: 3px; padding: 20px; text-decoration: none; color: var(--ink); transition: box-shadow .2s, transform .1s; }
+.coll-card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
+.coll-card-icon { font-size: 2rem; flex-shrink: 0; line-height: 1; margin-top: 2px; }
+.coll-card-body { flex: 1; min-width: 0; }
+.coll-card-name { margin: 0 0 5px; font-size: 1rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.coll-card-desc { margin: 0 0 8px; font-family: var(--font-serif); font-style: italic; font-size: .88rem; color: var(--ink-muted); line-height: 1.4; }
+.coll-card-meta { display: flex; gap: 8px; flex-wrap: wrap; font-family: var(--font-display); font-size: .56rem; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-muted); align-items: center; }
+.coll-vis-badge { background: var(--parchment-mid); padding: 2px 7px; border-radius: 2px; }
+.empty-salon { background: var(--vellum); border: 1px solid var(--border-soft); padding: 40px 28px; text-align: center; font-family: var(--font-serif); font-style: italic; color: var(--ink-muted); border-radius: 3px; }
+</style>
+{% endblock %}

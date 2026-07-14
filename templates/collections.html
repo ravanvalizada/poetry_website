@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% block title %}{% if view == 'my' %}{{ t("collections", "my_title") }}{% else %}{{ t("collections", "explore_title") }}{% endif %}{% endblock %}
+{% block content %}
+<div class="collections-page">
+    <div class="collections-header">
+        <h2>{% if view == 'my' %}{{ t("collections", "my_title") }}{% else %}{{ t("collections", "explore_title") }}{% endif %}</h2>
+        <div class="collections-nav">
+            <a href="{{ url_for('my_collections') }}" class="nav-tab {% if view=='my' %}active{% endif %}">{{ t("collections", "my_title") }}</a>
+            <a href="{{ url_for('explore_collections') }}" class="nav-tab {% if view=='explore' %}active{% endif %}">{{ t("collections", "explore_tab") }}</a>
+            {% if view == 'my' %}
+            <a href="{{ url_for('new_collection') }}" class="create-btn">{{ t("collections", "new_btn") }}</a>
+            {% endif %}
+        </div>
+    </div>
+
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            {% for msg in messages %}<div class="flash-msg">{{ msg }}</div>{% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    {% if collections %}
+    <div class="collections-grid">
+        {% for col in collections %}
+        <a href="{{ url_for('collection_detail', cid=col.id) }}" class="collection-card">
+            <div class="collection-icon">📖</div>
+            <div class="collection-info">
+                <h3 class="collection-name">{{ col.name }}</h3>
+                {% if col.description %}
+                <p class="collection-desc">{{ col.description[:80] }}{% if col.description|length > 80 %}…{% endif %}</p>
+                {% endif %}
+                <div class="collection-meta">
+                    <span>{{ col.poem_count }} {{ t("collections", "poems_count") if col.poem_count != 1 else t("collections", "poem_count") }}</span>
+                    {% if view == 'explore' %}
+                    <span>by @{{ col.username }}</span>
+                    <span>{{ col.follower_count }} {{ t("collections", "followers") if col.follower_count != 1 else t("collections", "follower") }}</span>
+                    {% endif %}
+                    <span class="visibility-badge">{{ t("collections", "public_badge") if col.is_public else t("collections", "private_badge") }}</span>
+                </div>
+            </div>
+        </a>
+        {% endfor %}
+    </div>
+    {% else %}
+        {% if view == 'my' %}
+        <div class="empty-state">
+            <p>{{ t("collections", "no_mine") }}</p>
+            <a href="{{ url_for('new_collection') }}" class="create-btn">{{ t("collections", "create_first") }}</a>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <p>{{ t("collections", "no_public") }}</p>
+        </div>
+        {% endif %}
+    {% endif %}
+</div>
+
+<style>
+.collections-page { max-width: 900px; margin: 2rem auto; padding: 0 1rem; }
+.collections-header { margin-bottom: 2rem; }
+.collections-header h2 { font-size: 1.8rem; margin-bottom: 1rem; }
+.collections-nav { display: flex; gap: 0.8rem; align-items: center; flex-wrap: wrap; }
+.nav-tab { padding: 0.5rem 1rem; border-radius: 20px; text-decoration: none; border: 1px solid var(--border, #d9c8a0); color: var(--text, #333); transition: background 0.2s; }
+.nav-tab.active, .nav-tab:hover { background: var(--accent, #8b4513); color: #fff; border-color: var(--accent, #8b4513); }
+.create-btn { padding: 0.5rem 1.2rem; background: var(--accent, #8b4513); color: #fff; border-radius: 20px; text-decoration: none; font-size: 0.9rem; margin-left: auto; }
+.collections-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1.2rem; }
+.collection-card { display: flex; gap: 1rem; background: var(--card-bg, #fdf6ec); border: 1px solid var(--border, #d9c8a0); border-radius: 10px; padding: 1.2rem; text-decoration: none; color: var(--text, #333); transition: box-shadow 0.2s, transform 0.1s; }
+.collection-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.08); transform: translateY(-2px); }
+.collection-icon { font-size: 2rem; flex-shrink: 0; }
+.collection-info { flex: 1; min-width: 0; }
+.collection-name { font-size: 1.05rem; font-weight: 600; margin: 0 0 0.3rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.collection-desc { font-size: 0.85rem; color: var(--muted, #888); margin: 0 0 0.5rem; line-height: 1.4; }
+.collection-meta { display: flex; flex-wrap: wrap; gap: 0.4rem; font-size: 0.8rem; color: var(--muted, #888); }
+.visibility-badge { background: var(--badge-bg, #f0e8d0); padding: 0.15rem 0.5rem; border-radius: 10px; }
+.empty-state { text-align: center; padding: 3rem; color: var(--muted, #888); }
+.empty-state .create-btn { display: inline-block; margin-top: 1rem; }
+.flash-msg { background: #e8f5e9; border: 1px solid #a5d6a7; padding: 0.6rem 1rem; border-radius: 6px; margin-bottom: 1rem; }
+</style>
+{% endblock %}

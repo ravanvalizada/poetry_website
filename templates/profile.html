@@ -1,0 +1,359 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="profile-container">
+
+    <div class="profile-card">
+        <div class="profile-header">
+
+            <img src="{{ url_for('static', filename='uploads/' + user.profile_picture) if user.profile_picture else url_for('static', filename='uploads/default_user.jpg') }}"
+                 alt="Profile Photo" class="profile-photo" id="profile-photo-display">
+
+            <div class="profile-info">
+                <h2 class="profile-title">
+                    {{ user.username }}{% if not user.username.endswith('s') %}'s{% else %}'{% endif %} Salon
+                    <span class="profile-user-id">#{{ user.id }}</span>
+                </h2>
+
+                <div class="profile-stats">
+                    <div class="stat-box clickable-stat" data-user-id="{{ user.id }}"
+                         onclick="openFollowModal('followers', this.dataset.userId)">
+                        <strong id="followers-count">{{ followers }}</strong>
+                        <span>{{ t("profile", "followers") }}</span>
+                    </div>
+                    <div class="stat-box clickable-stat" data-user-id="{{ user.id }}"
+                         onclick="openFollowModal('following', this.dataset.userId)">
+                        <strong id="following-count">{{ following }}</strong>
+                        <span>{{ t("profile", "following") }}</span>
+                    </div>
+                    <div class="stat-box">
+                        <strong>{{ rating }}</strong>
+                        <span>{{ t("profile", "rating_label") }}</span>
+                    </div>
+                </div>
+
+                <div class="profile-extra">
+                    {{ t("profile", "waiting_poems") }}: <strong>{{ waiting }}</strong>
+                </div>
+            </div>
+
+            <div class="profile-actions">
+                {% if session.get('user_id') and session['user_id'] != user.id %}
+                    <button type="button" id="follow-btn" class="follow-btn">
+                        {% if already_following %}{{ t("profile", "unfollow") }}{% else %}{{ t("profile", "follow") }}{% endif %}
+                    </button>
+                    {% if not user.is_system_author %}
+                        <button type="button" class="message-btn open-message-btn"
+                                data-user-id="{{ user.id }}"
+                                data-username="{{ user.username }}">
+                            Message
+                        </button>
+                    {% endif %}
+                {% endif %}
+
+                {% if user.is_system_author %}
+                    <button type="button" id="about-btn" class="about-btn">{{ t("profile", "about") }}</button>
+                {% endif %}
+            </div>
+        </div>
+
+        {% if session.get('user_id') == user.id %}
+            <button id="edit-profile-btn" class="edit-profile-btn">{{ t("profile", "edit") }}</button>
+        {% endif %}
+    </div>
+
+    {% if user.is_system_author %}
+    <div id="aboutAuthorModal" class="modal about-modal">
+        <div class="modal-content about-modal-content">
+            <span class="close-btn" id="close-about-modal">&times;</span>
+            <h2>{{ t("profile", "about_prefix") }} {{ user.username }}</h2>
+            <div class="about-author-text">
+                {{ author_bio if author_bio else "No information available for this poet yet." }}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="profile-featured-badges-floating">
+        <h4>{{ t("profile", "featured_badges") }}</h4>
+        {% if featured_badges %}
+            <div class="profile-badge-column">
+                {% for badge in featured_badges %}
+                    <div class="profile-badge-pill" title="{{ badge.name }}">
+                        <span class="profile-badge-icon">{{ badge.icon }}</span>
+                        <span class="profile-badge-text">{{ badge.name }}</span>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="no-badges-yet">{{ t("profile", "no_badges") }}</p>
+        {% endif %}
+    </div>
+
+    <section id="recent-poems" class="profile-poems">
+        <h3>📚 {{ t("profile", "published_poems") }}</h3>
+        {% if poems_by_genre %}
+            <div class="genre-tabs">
+                {% for genre in poems_by_genre.keys() %}
+                    <button class="genre-btn {% if loop.first %}active{% endif %}"
+                            onclick="showGenre('{{ genre }}', this)">
+                        {{ genre }}
+                    </button>
+                {% endfor %}
+            </div>
+            <div class="poem-cards">
+                {% for genre, poems in poems_by_genre.items() %}
+                    <div class="genre-group {% if not loop.first %}hidden{% endif %}"
+                         id="genre-{{ genre|replace(' ', '-') }}">
+                        {% for poem in poems %}
+                            <div class="poem-card">
+                                <a href="{{ url_for('poem_detail', poem_id=poem.id) }}"
+                                   class="poem-title">{{ poem.title }}</a>
+                                <span class="poem-date">
+                                    {{ poem.date[:20] if poem.date else "—" }}
+                                </span>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p>{{ t("profile", "no_published") }}</p>
+        {% endif %}
+    </section>
+
+    {% if session.get('user_id') == user.id %}
+    <section class="profile-poems">
+        <h3>⭐ {{ t("profile", "saved_poems") }}</h3>
+        {% if saved_poems %}
+            <div class="poem-cards">
+                <div class="genre-group">
+                    {% for poem in saved_poems %}
+                        <div class="poem-card">
+                            <a href="{{ url_for('poem_detail', poem_id=poem.id) }}"
+                               class="poem-title">{{ poem.title }}</a>
+                            <span class="poem-date">by {{ poem.author }}</span>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        {% else %}
+            <p>{{ t("profile", "no_saved") }}</p>
+        {% endif %}
+    </section>
+
+    <section class="profile-poems">
+        <h3>✨ {{ t("profile", "saved_quotes") }}</h3>
+        {% if saved_quotes %}
+            <div class="saved-quotes-list">
+                {% for quote in saved_quotes %}
+                    <div class="saved-quote-card">
+                        <div class="saved-quote-text">"{{ quote.quote_text }}"</div>
+                        <div class="saved-quote-meta">
+                            from
+                            <a href="{{ url_for('poem_detail', poem_id=quote.poem_id) }}">
+                                {{ quote.title }}
+                            </a>
+                            by {{ quote.author }}
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p>{{ t("profile", "no_saved_quotes") }}</p>
+        {% endif %}
+    </section>
+    {% endif %}
+
+</div>
+
+<!-- FOLLOW MODAL -->
+<div id="followModal" class="modal follow-modal">
+    <div class="modal-content follow-modal-content">
+        <span class="close-btn" id="close-follow-modal">&times;</span>
+        <h2 id="follow-modal-title">{{ t("profile", "followers") }}</h2>
+        <div id="follow-modal-body" class="follow-modal-body">
+            <p class="follow-empty">Loading…</p>
+        </div>
+    </div>
+</div>
+
+<!-- EDIT PROFILE MODAL -->
+<div id="editProfileModal" class="modal">
+    <div class="modal-content">
+        <span class="close-btn" id="close-edit-modal">&times;</span>
+        <h2>{{ t("profile", "edit_title") }}</h2>
+        <form id="edit-profile-form" enctype="multipart/form-data">
+            <label for="modal-username">{{ t("auth", "username") }}</label>
+            <input type="text" name="username" id="modal-username"
+                   value="{{ user.username }}" required>
+
+            <label for="modal-picture">{{ t("profile", "edit") }}</label>
+            <input type="file" name="profile_picture" id="modal-picture" accept="image/*">
+
+            <div class="form-buttons">
+                <button type="submit">{{ t("profile", "save_changes") }}</button>
+                <button type="button" id="remove-photo-btn">{{ t("profile", "remove_photo") }}</button>
+            </div>
+        </form>
+        <p id="edit-profile-msg"></p>
+    </div>
+</div>
+
+<script>
+// ── Genre tabs ─────────────────────────────────────────────
+function showGenre(genre, btn) {
+    document.querySelectorAll(".genre-group").forEach(g => g.classList.add("hidden"));
+    document.querySelectorAll(".genre-btn").forEach(b => b.classList.remove("active"));
+    const target = document.getElementById("genre-" + genre.replaceAll(" ", "-"));
+    if (target) target.classList.remove("hidden");
+    btn.classList.add("active");
+}
+
+// ── Follow modal ───────────────────────────────────────────
+async function openFollowModal(type, userId) {
+    const modal = document.getElementById("followModal");
+    const title = document.getElementById("follow-modal-title");
+    const body  = document.getElementById("follow-modal-body");
+
+    title.textContent = type === "followers" ? "{{ t('profile', 'followers') }}" : "{{ t('profile', 'following') }}";
+    body.innerHTML    = `<p class="follow-empty">Loading…</p>`;
+    modal.style.display = "flex";
+
+    try {
+        const res  = await fetch(`/profile/${userId}/${type}`);
+        const data = await res.json();
+        if (!data.users || data.users.length === 0) {
+            body.innerHTML = `<p class="follow-empty">No ${type} yet.</p>`;
+            return;
+        }
+        body.innerHTML = data.users.map(u =>
+            `<a href="/profile/${u.id}" class="follow-user-item">
+                <div class="follow-user-name">${u.username}</div>
+             </a>`
+        ).join("");
+    } catch {
+        body.innerHTML = `<p class="follow-empty">Failed to load ${type}.</p>`;
+    }
+}
+
+function closeFollowModal() {
+    document.getElementById("followModal").style.display = "none";
+}
+
+document.getElementById("close-follow-modal")
+    .addEventListener("click", closeFollowModal);
+
+// ── Follow / unfollow button ───────────────────────────────
+const followBtn = document.getElementById("follow-btn");
+if (followBtn) {
+    followBtn.addEventListener("click", async () => {
+        try {
+            const res  = await fetch("{{ url_for('toggle_follow', user_id=user.id) }}", {
+                method: "POST",
+                headers: { "X-Requested-With": "XMLHttpRequest" }
+            });
+            const data = await res.json();
+            followBtn.textContent = data.action === "followed" ? "{{ t('profile', 'unfollow') }}" : "{{ t('profile', 'follow') }}";
+            document.getElementById("followers-count").textContent = data.followers;
+            document.getElementById("following-count").textContent = data.following;
+        } catch (err) {
+            console.error("Follow error:", err);
+        }
+    });
+}
+
+// ── Edit-profile modal ─────────────────────────────────────
+const editModal    = document.getElementById("editProfileModal");
+const editBtn      = document.getElementById("edit-profile-btn");
+const closeEditBtn = document.getElementById("close-edit-modal");
+
+if (editBtn)      editBtn.addEventListener("click", () => editModal.style.display = "flex");
+if (closeEditBtn) closeEditBtn.addEventListener("click", () => editModal.style.display = "none");
+
+const editForm = document.getElementById("edit-profile-form");
+if (editForm) {
+    editForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        try {
+            const res  = await fetch("{{ url_for('edit_profile') }}", {
+                method: "POST", body: new FormData(editForm)
+            });
+            const data = await res.json();
+            const msgEl = document.getElementById("edit-profile-msg");
+            if (data.success) {
+                // Update username heading
+                const suffix = data.username.endsWith("s") ? "'" : "'s";
+                document.querySelector(".profile-title").innerHTML =
+                    `${data.username}${suffix} Salon <span class="profile-user-id">#{{ user.id }}</span>`;
+                // Update photo
+                const photo = document.getElementById("profile-photo-display");
+                const src   = data.profile_picture
+                    ? `/static/uploads/${data.profile_picture}`
+                    : `/static/uploads/default_user.jpg`;
+                photo.src = `${src}?t=${Date.now()}`;
+                msgEl.textContent = "Profile updated successfully!";
+                setTimeout(() => { editModal.style.display = "none"; msgEl.textContent = ""; }, 1400);
+            } else {
+                msgEl.textContent = data.error || "Error updating profile.";
+            }
+        } catch {
+            document.getElementById("edit-profile-msg").textContent = "Error updating profile.";
+        }
+    });
+}
+
+const removePhotoBtn = document.getElementById("remove-photo-btn");
+if (removePhotoBtn) {
+    removePhotoBtn.addEventListener("click", async () => {
+        if (!confirm("Remove your profile photo?")) return;
+        try {
+            const res  = await fetch("/remove_profile_photo", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({})
+            });
+            const data = await res.json();
+            const msgEl = document.getElementById("edit-profile-msg");
+            if (data.success) {
+                document.getElementById("profile-photo-display").src =
+                    `/static/uploads/default_user.jpg?t=${Date.now()}`;
+                msgEl.textContent = "Profile photo removed.";
+            } else {
+                msgEl.textContent = data.error || "Could not remove photo.";
+            }
+        } catch {
+            document.getElementById("edit-profile-msg").textContent = "Error removing photo.";
+        }
+    });
+}
+
+// ── About modal ────────────────────────────────────────────
+const aboutBtn   = document.getElementById("about-btn");
+const aboutModal = document.getElementById("aboutAuthorModal");
+const closeAbout = document.getElementById("close-about-modal");
+
+if (aboutBtn && aboutModal) {
+    aboutBtn.addEventListener("click",  () => aboutModal.style.display = "flex");
+    closeAbout.addEventListener("click", () => aboutModal.style.display = "none");
+}
+
+// ── Message panel ──────────────────────────────────────────
+const messageBtn = document.querySelector(".open-message-btn");
+if (messageBtn) {
+    messageBtn.addEventListener("click", function() {
+        if (typeof openMessagePanelForUser === "function") {
+            openMessagePanelForUser(this.dataset.userId, this.dataset.username);
+        }
+    });
+}
+
+// ── Backdrop close for all modals ──────────────────────────
+window.addEventListener("click", (e) => {
+    if (e.target === editModal)  editModal.style.display  = "none";
+    if (e.target === aboutModal) aboutModal.style.display = "none";
+    if (e.target === document.getElementById("followModal")) closeFollowModal();
+});
+</script>
+
+{% endblock %}

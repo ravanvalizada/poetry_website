@@ -1,0 +1,197 @@
+{% extends "base.html" %}
+{% block title %}Recitations — {{ poem.title }}{% endblock %}
+{% block content %}
+
+<div class="feature-page">
+  <div class="feature-page-head">
+    <div>
+      <h2>🎙 Recitations</h2>
+      <p class="feature-page-sub"><em>{{ poem.title }}</em> by {{ poem.author }}</p>
+    </div>
+    <a href="{{ url_for('poem_detail', poem_id=poem.id) }}" class="back-btn">← Back to poem</a>
+  </div>
+
+  {% with msgs = get_flashed_messages() %}{% if msgs %}
+    {% for m in msgs %}<div class="salon-flash">{{ m }}</div>{% endfor %}
+  {% endif %}{% endwith %}
+
+  {% if current_user_id %}
+  <div class="rec-upload-box">
+    <h3 class="rec-upload-title">{{ t("recitations", "upload_title") }}</h3>
+    <p class="rec-upload-hint">Anyone can record themselves reading this poem. MP3, WAV, OGG or M4A — keep it under 2 minutes.</p>
+    <form action="{{ url_for('upload_recitation', poem_id=poem.id) }}" method="post" enctype="multipart/form-data" class="rec-upload-form">
+      <label class="file-pick-label" for="audio-file">
+        <span class="file-pick-icon">🎙</span>
+        <span class="file-pick-text" id="file-pick-text">Choose audio file…</span>
+      </label>
+      <input type="file" id="audio-file" name="audio" accept=".mp3,.wav,.ogg,.m4a,.webm" required class="file-pick-input">
+      <button type="submit" class="salon-btn">{{ t("recitations", "upload_btn") }}</button>
+    </form>
+  </div>
+  {% else %}
+  <div class="rec-login-prompt">
+    <a href="{{ url_for('login') }}">Log in</a> to upload your own recitation of this poem.
+  </div>
+  {% endif %}
+
+  <div class="rec-list">
+    {% if recitations %}
+      {% for rec in recitations %}
+      <div class="rec-card" id="rec-{{ rec.id }}">
+        <div class="rec-card-head">
+          <img src="{{ url_for('static', filename='uploads/' + (rec.profile_picture or 'default_avatar.jpg')) }}"
+               alt="" class="rec-avatar">
+          <div>
+            <span class="rec-username">@{{ rec.username }}</span>
+            <span class="rec-date">{{ rec.uploaded_at | string | truncate(10, False, "") }}</span>
+          </div>
+        </div>
+        <audio controls class="rec-audio">
+          <source src="{{ url_for('static', filename='audio_uploads/' + rec.filename) }}">
+          Your browser does not support audio playback.
+        </audio>
+        <div class="rec-card-foot">
+          {% if current_user_id %}
+          <button class="rec-like-btn {% if rec.id in user_liked %}rec-liked{% endif %}" data-id="{{ rec.id }}">
+            ♥ <span>{{ rec.likes }}</span>
+          </button>
+          {% else %}
+          <span class="rec-like-count">♥ {{ rec.likes }}</span>
+          {% endif %}
+          <button class="rec-cmt-toggle" data-id="{{ rec.id }}">
+            💬 {{ rec.cmt_count }} comment{{ 's' if rec.cmt_count != 1 else '' }}
+          </button>
+        </div>
+        <div class="rec-cmt-area hidden" id="rca-{{ rec.id }}">
+          <div class="rec-cmt-list" id="rcl-{{ rec.id }}"></div>
+          {% if current_user_id %}
+          <div class="rec-cmt-form">
+            <input type="text" class="rec-cmt-input" data-id="{{ rec.id }}" placeholder="Comment on this recitation…">
+            <button class="rec-cmt-post salon-btn-sm" data-id="{{ rec.id }}">Post</button>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+      {% endfor %}
+    {% else %}
+      <div class="empty-salon">
+        <p>{{ t("recitations", "no_recitations") }}</p>
+      </div>
+    {% endif %}
+  </div>
+</div>
+
+<style>
+.feature-page { max-width: 740px; margin: 0 auto; padding: 32px 20px 60px; }
+.feature-page-head { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 32px; gap: 16px; flex-wrap: wrap; }
+.feature-page-head h2 { font-size: clamp(1.4rem,3vw,2rem); margin: 0 0 4px; }
+.feature-page-sub { margin: 0; color: var(--ink-muted); font-family: var(--font-serif); font-style: italic; }
+.back-btn { display: inline-block; padding: 7px 14px; border: 1px solid var(--border); border-radius: 2px; font-family: var(--font-display); font-size: .58rem; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-soft); text-decoration: none; transition: background .15s; white-space: nowrap; }
+.back-btn:hover { background: var(--parchment-mid); }
+.salon-flash { background: var(--vellum); border-left: 3px solid var(--sepia); padding: 10px 16px; margin-bottom: 20px; font-family: var(--font-body); font-size: .95rem; color: var(--ink); }
+.rec-upload-box { background: var(--vellum); border: 1px solid var(--border-soft); border-radius: 3px; padding: 24px 28px; margin-bottom: 36px; }
+.rec-upload-title { font-size: 1rem; margin: 0 0 6px; }
+.rec-upload-hint { margin: 0 0 18px; font-family: var(--font-serif); font-style: italic; color: var(--ink-muted); font-size: .92rem; }
+.rec-upload-form { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.file-pick-label { display: flex; align-items: center; gap: 8px; padding: 8px 16px; border: 1px dashed var(--border); border-radius: 2px; cursor: pointer; font-family: var(--font-display); font-size: .58rem; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-muted); transition: border-color .15s, color .15s; }
+.file-pick-label:hover { border-color: var(--sepia); color: var(--sepia); }
+.file-pick-input { display: none; }
+.salon-btn { background: var(--ink-soft); color: var(--parchment); border: none; border-radius: 2px; padding: 9px 20px; font-family: var(--font-display); font-size: .6rem; letter-spacing: .14em; text-transform: uppercase; cursor: pointer; transition: background .2s; }
+.salon-btn:hover { background: var(--sepia); }
+.salon-btn-sm { background: var(--ink-soft); color: var(--parchment); border: none; border-radius: 2px; padding: 6px 14px; font-family: var(--font-display); font-size: .56rem; letter-spacing: .12em; text-transform: uppercase; cursor: pointer; transition: background .2s; white-space: nowrap; }
+.salon-btn-sm:hover { background: var(--sepia); }
+.rec-login-prompt { background: var(--vellum); border: 1px solid var(--border-soft); padding: 16px 20px; margin-bottom: 28px; font-family: var(--font-serif); font-style: italic; color: var(--ink-muted); text-align: center; border-radius: 3px; }
+.rec-login-prompt a { color: var(--sepia); }
+.rec-list { display: flex; flex-direction: column; gap: 20px; }
+.rec-card { background: var(--vellum); border: 1px solid var(--border-soft); border-radius: 3px; padding: 20px 24px; }
+.rec-card-head { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+.rec-avatar { width: 38px; height: 38px; border-radius: 50%; object-fit: cover; border: 1px solid var(--border); }
+.rec-username { display: block; font-weight: 600; color: var(--ink); font-size: .95rem; }
+.rec-date { display: block; color: var(--ink-muted); font-size: .8rem; margin-top: 1px; }
+.rec-audio { width: 100%; margin-bottom: 14px; }
+.rec-card-foot { display: flex; gap: 12px; align-items: center; }
+.rec-like-btn { background: none; border: 1px solid var(--border); border-radius: 2px; padding: 5px 12px; cursor: pointer; font-family: var(--font-display); font-size: .58rem; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-muted); transition: all .15s; }
+.rec-like-btn:hover { border-color: var(--sepia); color: var(--sepia); background: var(--parchment-mid); }
+.rec-like-btn.rec-liked { background: var(--parchment-mid); border-color: var(--sepia); color: var(--sepia); }
+.rec-like-count { font-family: var(--font-display); font-size: .58rem; letter-spacing: .1em; color: var(--ink-muted); text-transform: uppercase; }
+.rec-cmt-toggle { background: none; border: 1px solid var(--border); border-radius: 2px; padding: 5px 12px; cursor: pointer; font-family: var(--font-display); font-size: .58rem; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-muted); transition: all .15s; }
+.rec-cmt-toggle:hover { border-color: var(--sepia); color: var(--sepia); background: var(--parchment-mid); }
+.rec-cmt-area { margin-top: 16px; border-top: 1px solid var(--border-soft); padding-top: 14px; }
+.rec-cmt-list { margin-bottom: 12px; }
+.rec-cmt-item { padding: 6px 0; border-bottom: 1px solid var(--border-soft); font-family: var(--font-body); font-size: .95rem; line-height: 1.6; }
+.rec-cmt-item:last-child { border-bottom: none; }
+.rec-cmt-author { font-weight: 600; color: var(--sepia); margin-right: 5px; font-size: .88rem; }
+.rec-cmt-empty { font-family: var(--font-serif); font-style: italic; color: var(--ink-muted); font-size: .9rem; text-align: center; padding: 8px 0; }
+.rec-cmt-form { display: flex; gap: 8px; }
+.rec-cmt-input { flex: 1; padding: 7px 10px; border: 1px solid var(--border); border-radius: 2px; background: var(--parchment); color: var(--ink); font-family: var(--font-body); font-size: .95rem; }
+.rec-cmt-input:focus { border-color: var(--sepia); outline: none; }
+.empty-salon { background: var(--vellum); border: 1px solid var(--border-soft); padding: 40px 28px; text-align: center; font-family: var(--font-serif); font-style: italic; color: var(--ink-muted); border-radius: 3px; }
+.hidden { display: none !important; }
+</style>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  /* file label update */
+  document.getElementById('audio-file')?.addEventListener('change', function() {
+    const label = document.getElementById('file-pick-text');
+    if (label) label.textContent = this.files[0]?.name || 'Choose audio file…';
+  });
+
+  /* like buttons */
+  document.querySelectorAll('.rec-like-btn').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const id = btn.dataset.id;
+      const res = await fetch(`/recitation/${id}/like`, { method: 'POST' });
+      const d = await res.json();
+      btn.classList.toggle('rec-liked', d.liked);
+      btn.querySelector('span').textContent = d.count;
+    });
+  });
+
+  /* comment toggle + load */
+  async function loadRecCmts(id) {
+    const list = document.getElementById(`rcl-${id}`);
+    const res  = await fetch(`/recitation/${id}/comments`);
+    const data = await res.json();
+    if (!data.length) {
+      list.innerHTML = '<p class="rec-cmt-empty">No comments yet.</p>';
+    } else {
+      list.innerHTML = data.map(c =>
+        `<div class="rec-cmt-item"><span class="rec-cmt-author">@${c.username}</span>${c.comment}</div>`
+      ).join('');
+    }
+  }
+  document.querySelectorAll('.rec-cmt-toggle').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const id = btn.dataset.id;
+      const area = document.getElementById(`rca-${id}`);
+      if (area.classList.toggle('hidden')) return;
+      await loadRecCmts(id);
+    });
+  });
+
+  /* post comment */
+  document.querySelectorAll('.rec-cmt-post').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const id    = btn.dataset.id;
+      const input = document.querySelector(`.rec-cmt-input[data-id="${id}"]`);
+      const text  = input?.value.trim(); if (!text) return;
+      const res = await fetch(`/recitation/${id}/comments`, {
+        method: 'POST', headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({ comment: text })
+      });
+      const d = await res.json();
+      if (d.success) { input.value = ''; await loadRecCmts(id); }
+    });
+  });
+  document.querySelectorAll('.rec-cmt-input').forEach(inp => {
+    inp.addEventListener('keydown', e => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        document.querySelector(`.rec-cmt-post[data-id="${inp.dataset.id}"]`)?.click();
+      }
+    });
+  });
+});
+</script>
+{% endblock %}

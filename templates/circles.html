@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}Salon Circles{% endblock %}
+{% block content %}
+<div class="salon-page">
+
+  <div class="salon-hero">
+    <h1 class="salon-title">{{ t("salon", "circles_title") }}</h1>
+    <p class="salon-subtitle">{{ t("salon", "circles_subtitle") }}</p>
+    {% if session.get("username") %}
+    <a href="{{ url_for('circles_create') }}" class="btn-primary">+ {{ t("salon", "create_circle_btn") }}</a>
+    {% endif %}
+  </div>
+
+  {% if session.get("username") and my_circles %}
+  <section class="salon-section">
+    <h2 class="section-heading">{{ t("salon", "your_circles") }}</h2>
+    <div class="circles-grid">
+      {% for c in my_circles %}
+      <a href="{{ url_for('circle_detail', circle_id=c.id) }}" class="circle-card circle-card--mine">
+        <div class="circle-card-top">
+          <h3 class="circle-name">{{ c.name }}</h3>
+          <span class="circle-role-badge circle-role--{{ c.role }}">{{ t('nav', 'owner') if c.role == 'owner' else c.role|title }}</span>
+        </div>
+        <p class="circle-desc">{{ c.description or '' }}</p>
+        <span class="circle-meta">{{ c.member_count }} {{ t('nav', 'members') }}</span>
+      </a>
+      {% endfor %}
+    </div>
+  </section>
+  {% endif %}
+
+  <section class="salon-section">
+    <h2 class="section-heading">{{ t("salon", "all_circles") }}</h2>
+    {% if all_circles %}
+    <div class="circles-grid">
+      {% for c in all_circles %}
+      <div class="circle-card">
+        <div class="circle-card-top">
+          <h3 class="circle-name">{{ c.name }}</h3>
+          <span class="circle-meta">{{ c.member_count }} {{ t('nav', 'members') }}</span>
+        </div>
+        <p class="circle-desc">{{ c.description or '' }}</p>
+        <p class="circle-owner">Hosted by <strong>{{ c.owner_name }}</strong></p>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <p class="empty-state">{{ t("salon", "no_circles") }}</p>
+    {% endif %}
+  </section>
+
+</div>
+{% endblock %}

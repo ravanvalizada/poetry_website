@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+{% block title %}{{ col.name }}{% endblock %}
+{% block content %}
+<div class="feature-page">
+  <div class="feature-page-head">
+    <div>
+      <h2>📖 {{ col.name }}</h2>
+      <p class="feature-page-sub">
+        by <a href="{{ url_for('profile', user_id=col.user_id) }}" class="serif-link">@{{ col.username }}</a>
+        &nbsp;·&nbsp; {{ '🌍 Public' if col.is_public else '🔒 Private' }}
+        &nbsp;·&nbsp; <span id="fc">{{ follower_count }}</span> follower{{ 's' if follower_count != 1 else '' }}
+      </p>
+      {% if col.description %}<p class="coll-desc">{{ col.description }}</p>{% endif %}
+    </div>
+    <div class="head-actions">
+      <a href="{{ url_for('my_collections') }}" class="back-btn">← {{ t("common", "back") }}</a>
+      {% if current_user_id and col.is_public and current_user_id != col.user_id %}
+      <button id="follow-btn" class="follow-btn {% if is_following %}follow-btn--on{% endif %}" data-id="{{ col.id }}"
+              data-following-label="{{ t('profile', 'unfollow') }}"
+              data-follow-label="{{ t('profile', 'follow') }}">
+        {% if is_following %}{{ t("profile", "unfollow") }}{% else %}{{ t("profile", "follow") }}{% endif %}
+      </button>
+      {% endif %}
+      {% if current_user_id == col.user_id %}
+      <form method="post" action="{{ url_for('delete_collection', cid=col.id) }}"
+            id="delete-collection-form" style="all: unset">
+        <button type="submit" class="back-btn" style="color:#c0392b;border-color:#c0392b;">{{ t("collections", "delete") }}</button>
+      </form>
+      {% endif %}
+    </div>
+  </div>
+
+  {% with msgs = get_flashed_messages() %}{% if msgs %}
+    {% for m in msgs %}<div class="salon-flash">{{ m }}</div>{% endfor %}
+  {% endif %}{% endwith %}
+
+  {% if poems %}
+  <div class="coll-poems-grid">
+    {% for poem in poems %}
+    <div class="coll-poem-card">
+      <a href="{{ url_for('poem_detail', poem_id=poem.id) }}" class="coll-poem-title">{{ poem.title }}</a>
+      <p class="coll-poem-author">{{ poem.author }}</p>
+      <p class="coll-poem-genre">{{ poem.genre }}</p>
+      {% if current_user_id == col.user_id %}
+      <button class="remove-poem-btn" data-cid="{{ col.id }}" data-pid="{{ poem.id }}">✕ Remove</button>
+      {% endif %}
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="empty-salon">
+    <p>This collection has no poems yet.{% if current_user_id == col.user_id %} Browse poems and use "Add to Collection" to fill it.{% endif %}</p>
+  </div>
+  {% endif %}
+</div>
+
+<style>
+.feature-page { max-width: 900px; margin: 0 auto; padding: 32px 20px 60px; }
+.feature-page-head { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 32px; gap: 16px; flex-wrap: wrap; }
+.feature-page-head h2 { font-size: clamp(1.4rem,3vw,2rem); margin: 0 0 4px; }
+.feature-page-sub { margin: 0 0 6px; color: var(--ink-muted); font-family: var(--font-serif); font-size: .92rem; }
+.coll-desc { margin: 4px 0 0; font-family: var(--font-body); color: var(--ink-soft); font-size: .97rem; }
+.serif-link { color: var(--sepia); text-decoration: none; }
+.head-actions { display: flex; gap: 10px; flex-wrap: wrap; align-items: flex-start; }
+.back-btn { display: inline-block; padding: 7px 14px; border: 1px solid var(--border); border-radius: 2px; font-family: var(--font-display); font-size: .58rem; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-soft); text-decoration: none; background: none; cursor: pointer; transition: background .15s; }
+.back-btn:hover { background: var(--parchment-mid); }
+.follow-btn { padding: 7px 16px; border: 1px solid var(--sepia); border-radius: 2px; background: none; color: var(--sepia); cursor: pointer; font-family: var(--font-display); font-size: .58rem; letter-spacing: .12em; text-transform: uppercase; transition: all .15s; }
+.follow-btn--on { background: var(--ink-soft); color: var(--parchment); border-color: var(--ink-soft); }
+.follow-btn:hover:not(.follow-btn--on) { background: var(--parchment-mid); }
+.salon-flash { background: var(--vellum); border-left: 3px solid var(--sepia); padding: 10px 16px; margin-bottom: 20px; font-size: .95rem; }
+.coll-poems-grid { display: grid; grid-template-columns: repeat(auto-fill,minmax(200px,1fr)); gap: 14px; }
+.coll-poem-card { background: var(--vellum); border: 1px solid var(--border-soft); border-radius: 3px; padding: 16px 18px; display: flex; flex-direction: column; gap: 3px; }
+.coll-poem-title { font-weight: 600; color: var(--sepia); text-decoration: none; font-size: .97rem; line-height: 1.35; }
+.coll-poem-title:hover { text-decoration: underline; }
+.coll-poem-author { margin: 0; font-size: .84rem; color: var(--ink-muted); }
+.coll-poem-genre  { margin: 0; font-family: var(--font-display); font-size: .54rem; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-muted); }
+.remove-poem-btn { background: none; border: none; cursor: pointer; color: #c0392b; font-size: .78rem; padding: 0; margin-top: 6px; text-align: left; text-align: center; height: 25px; }
+.remove-poem-btn:hover { text-decoration: underline; }
+.empty-salon { background: var(--vellum); border: 1px solid var(--border-soft); padding: 40px 28px; text-align: center; font-family: var(--font-serif); font-style: italic; color: var(--ink-muted); border-radius: 3px; }
+</style>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  document.getElementById("follow-btn")?.addEventListener("click", async function() {
+    const id = this.dataset.id;
+    const res = await fetch(`/collections/${id}/follow`, { method: "POST" });
+    const d   = await res.json();
+    this.classList.toggle("follow-btn--on", d.following);
+    this.textContent = d.following ? this.dataset.followingLabel : this.dataset.followLabel;
+    document.getElementById("fc").textContent = d.count;
+  });
+
+  document.querySelectorAll(".remove-poem-btn").forEach(btn => {
+    btn.addEventListener("click", async () => {
+      if (!confirm("Remove this poem from the collection?")) return;
+      const res = await fetch(`/collections/${btn.dataset.cid}/remove`, {
+        method: "POST", headers: {"Content-Type":"application/json"},
+        body: JSON.stringify({ poem_id: btn.dataset.pid })
+      });
+      const d = await res.json();
+      if (d.success) btn.closest(".coll-poem-card").remove();
+    });
+  });
+});
+
+  document.getElementById("delete-collection-form").addEventListener("submit", function(e) {
+    if (!confirm("{{ t('common', 'confirm') }}?")) e.preventDefault();
+  });
+</script>
+
+
+
+
+{% endblock %}

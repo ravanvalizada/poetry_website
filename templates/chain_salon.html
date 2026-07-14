@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}Chain Poetry Salon{% endblock %}
+{% block content %}
+<div class="salon-page">
+  <div class="salon-hero">
+    <h1 class="salon-title">{{ t("salon", "chain_title") }}</h1>
+    <p class="salon-subtitle">{{ t("salon", "chain_subtitle") }}</p>
+    {% if session.get("username") %}
+    <a href="{{ url_for('chain_salon_create') }}" class="btn-primary">+ Start a New Chain Poem</a>
+    {% endif %}
+  </div>
+
+  <section class="salon-section">
+    <h2 class="section-heading">{{ t("salon", "active_poems") }}</h2>
+    {% if active %}
+    <div class="chain-grid">
+      {% for poem in active %}
+      <a href="{{ url_for('chain_salon_detail', poem_id=poem.id) }}" class="chain-card">
+        <div class="chain-card-header">
+          <span class="chain-label">{{ t("salon", "in_progress") }}</span>
+          <span class="chain-stanza-count">{{ poem.stanza_count }} stanza{{ 's' if poem.stanza_count != 1 }}</span>
+        </div>
+        <h3 class="chain-card-title">{{ poem.title }}</h3>
+        <p class="chain-card-meta">Started by <strong>{{ poem.creator_name }}</strong> · {{ poem.created_at | string | truncate(10, False, "") }}</p>
+      </a>
+      {% endfor %}
+    </div>
+    {% else %}
+    <p class="empty-state">{{ t("salon", "no_active") }}</p>
+    {% endif %}
+  </section>
+
+  <section class="salon-section">
+    <h2 class="section-heading">{{ t("salon", "completed_poems") }}</h2>
+    {% if ended %}
+    <div class="chain-grid">
+      {% for poem in ended %}
+      <a href="{{ url_for('chain_salon_detail', poem_id=poem.id) }}" class="chain-card chain-card--ended">
+        <div class="chain-card-header">
+          <span class="chain-label chain-label--ended">{{ t("salon", "complete") }}</span>
+          <span class="chain-stanza-count">{{ poem.stanza_count }} stanza{{ 's' if poem.stanza_count != 1 }}</span>
+        </div>
+        <h3 class="chain-card-title">{{ poem.title }}</h3>
+        <p class="chain-card-meta">By <strong>{{ poem.creator_name }}</strong> · Ended {{ poem.ended_at | string | truncate(10, False, "") }}</p>
+      </a>
+      {% endfor %}
+    </div>
+    {% else %}
+    <p class="empty-state">{{ t("salon", "no_completed") }}</p>
+    {% endif %}
+  </section>
+</div>
+{% endblock %}

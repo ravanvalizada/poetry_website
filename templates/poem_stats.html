@@ -1,0 +1,143 @@
+{% extends "base.html" %}
+{% block title %}Stats — {{ poem.title }}{% endblock %}
+{% block content %}
+<div class="feature-page">
+  <div class="feature-page-head">
+    <div>
+      <h2>📊 Poem Statistics</h2>
+      <p class="feature-page-sub"><em>{{ poem.title }}</em> by {{ poem.author }}</p>
+    </div>
+    <a href="{{ url_for('poem_detail', poem_id=poem.id) }}" class="back-btn">← Back to poem</a>
+  </div>
+
+  <div class="stats-grid">
+
+    <div class="stat-tile">
+      <span class="stat-tile-icon">👁</span>
+      <span class="stat-tile-val">{{ stats.views }}</span>
+      <span class="stat-tile-lbl">{{ t("poem", "views") }}</span>
+    </div>
+
+    <div class="stat-tile">
+      <span class="stat-tile-icon">❤</span>
+      <span class="stat-tile-val">{{ stats.likes }}</span>
+      <span class="stat-tile-lbl">{{ t("poem", "likes") }}</span>
+    </div>
+
+    <div class="stat-tile">
+      <span class="stat-tile-icon">🔖</span>
+      <span class="stat-tile-val">{{ stats.saves }}</span>
+      <span class="stat-tile-lbl">{{ t("poem", "saves") }}</span>
+    </div>
+
+    <div class="stat-tile">
+      <span class="stat-tile-icon">✨</span>
+      <span class="stat-tile-val">{{ stats.quotes }}</span>
+      <span class="stat-tile-lbl">{{ t("poem", "quotes_created") }}</span>
+    </div>
+
+    <div class="stat-tile">
+      <span class="stat-tile-icon">💬</span>
+      <span class="stat-tile-val">{{ stats.comments }}</span>
+      <span class="stat-tile-lbl">{{ t("poem", "comments") }}</span>
+    </div>
+
+    <div class="stat-tile">
+      <span class="stat-tile-icon">📝</span>
+      <span class="stat-tile-val">{{ stats.line_comments }}</span>
+      <span class="stat-tile-lbl">{{ t("poem", "line_comments_lbl") }}</span>
+    </div>
+
+    <div class="stat-tile">
+      <span class="stat-tile-icon">🎙</span>
+      <span class="stat-tile-val">{{ stats.recitations }}</span>
+      <span class="stat-tile-lbl">{{ t("poem", "recitations") }}</span>
+    </div>
+
+    <div class="stat-tile">
+      <span class="stat-tile-icon">⭐</span>
+      <span class="stat-tile-val">{{ stats.avg_rating if stats.avg_rating else '—' }}</span>
+      <span class="stat-tile-lbl">{{ t("poem", "avg_rating") }}</span>
+    </div>
+
+  </div>
+
+  <div class="stats-detail-card">
+    <h3 class="sdc-title">{{ t("poem", "reading_time") }}</h3>
+    <div class="sdc-rows">
+      <div class="sdc-row">
+        <span class="sdc-key">{{ t("poem", "word_count") }}</span>
+        <span class="sdc-val">{{ stats.word_count }} words</span>
+      </div>
+      <div class="sdc-row">
+        <span class="sdc-key">Total time all readers spent</span>
+        <span class="sdc-val">{{ stats.total_time }}s</span>
+      </div>
+      <div class="sdc-row">
+        <span class="sdc-key">Average reading time per view</span>
+        <span class="sdc-val">{% if stats.avg_reading_time %}{{ stats.avg_reading_time }}s{% else %}—{% endif %}</span>
+      </div>
+    </div>
+  </div>
+
+  {% if stats.views > 0 %}
+  <div class="stats-detail-card">
+    <h3 class="sdc-title">{{ t("poem", "engagement") }}</h3>
+    {% set like_rate    = ((stats.likes    / stats.views * 100) | round(1)) %}
+    {% set save_rate    = ((stats.saves    / stats.views * 100) | round(1)) %}
+    {% set comment_rate = (((stats.comments + stats.line_comments) / stats.views * 100) | round(1)) %}
+    {% set quote_rate   = ((stats.quotes   / stats.views * 100) | round(1)) %}
+    <div class="eng-bars">
+      {% for label, val, cls in [
+        ('Like rate',    like_rate,    'eng-sepia'),
+        ('Save rate',    save_rate,    'eng-blue'),
+        ('Comment rate', comment_rate, 'eng-green'),
+        ('Quote rate',   quote_rate,   'eng-gold')
+      ] %}
+      {% set bar_width = [val, 100] | min %}
+      <div class="eng-row">
+        <span class="eng-lbl">{{ label }}</span>
+        <div class="eng-track"><div class="eng-fill {{ cls }}"></div></div>
+        <span class="eng-pct">{{ val }}%</span>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+</div>
+
+<style>
+.feature-page { max-width: 860px; margin: 0 auto; padding: 32px 20px 60px; }
+.feature-page-head { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 32px; gap: 16px; flex-wrap: wrap; }
+.feature-page-head h2 { font-size: clamp(1.4rem,3vw,2rem); margin: 0 0 4px; }
+.feature-page-sub { margin: 0; color: var(--ink-muted); font-family: var(--font-serif); font-style: italic; }
+.back-btn { display: inline-block; padding: 7px 14px; border: 1px solid var(--border); border-radius: 2px; font-family: var(--font-display); font-size: .58rem; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-soft); text-decoration: none; transition: background .15s; white-space: nowrap; }
+.back-btn:hover { background: var(--parchment-mid); }
+/* Stat tiles */
+.stats-grid { display: grid; grid-template-columns: repeat(auto-fill,minmax(160px,1fr)); gap: 14px; margin-bottom: 28px; }
+.stat-tile { background: var(--vellum); border: 1px solid var(--border-soft); border-radius: 3px; padding: 20px 16px; display: flex; flex-direction: column; align-items: center; gap: 5px; }
+.stat-tile-icon { font-size: 1.6rem; line-height: 1; }
+.stat-tile-val  { font-size: 2rem; font-weight: 700; color: var(--sepia); line-height: 1; }
+.stat-tile-lbl  { font-family: var(--font-display); font-size: .52rem; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-muted); text-align: center; }
+/* Detail cards */
+.stats-detail-card { background: var(--vellum); border: 1px solid var(--border-soft); border-radius: 3px; padding: 22px 26px; margin-bottom: 20px; }
+.sdc-title { font-size: .8rem; letter-spacing: .1em; text-transform: uppercase; margin: 0 0 14px; color: var(--ink); }
+.sdc-rows { display: flex; flex-direction: column; gap: 10px; }
+.sdc-row  { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding-bottom: 10px; border-bottom: 1px solid var(--border-soft); }
+.sdc-row:last-child { border-bottom: none; padding-bottom: 0; }
+.sdc-key  { font-family: var(--font-body); font-size: .92rem; color: var(--ink-muted); }
+.sdc-val  { font-family: var(--font-display); font-size: .78rem; letter-spacing: .06em; font-weight: 600; color: var(--ink); }
+/* Engagement bars */
+.eng-bars { display: flex; flex-direction: column; gap: 12px; }
+.eng-row  { display: flex; align-items: center; gap: 12px; }
+.eng-lbl  { width: 100px; flex-shrink: 0; font-family: var(--font-body); font-size: .88rem; color: var(--ink-muted); }
+.eng-track { flex: 1; height: 8px; background: var(--border-soft); border-radius: 4px; overflow: hidden; }
+.eng-fill  { height: 100%; border-radius: 4px; transition: width .5s var(--ease); }
+.eng-sepia { background: var(--sepia); }
+.eng-blue  { background: #5580a0; }
+.eng-green { background: #4a7a4a; }
+.eng-gold  { background: var(--gold); }
+.eng-pct  { width: 44px; text-align: right; font-family: var(--font-display); font-size: .6rem; letter-spacing: .06em; color: var(--ink-soft); }
+</style>
+{% endblock %}

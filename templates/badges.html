@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% block content %}
+
+<section class="badges-page">
+    <div class="badges-header">
+        <h1>{{ t("badges", "page_title") }}</h1>
+        <p>{{ t("badges", "page_subtitle") }}</p>
+    </div>
+
+    <div class="featured-salon-box">
+        <h2>{{ t("badges", "featured_title") }}</h2>
+
+        {% if featured_badges %}
+            <div class="featured-badges-row">
+                {% for badge in featured_badges %}
+                    <div class="featured-badge-pill">
+                        <span class="badge-icon">{{ badge.icon }}</span>
+                        <span class="badge-name">{{ badge.name }}</span>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="empty-featured">{{ t("badges", "no_featured") }}</p>
+        {% endif %}
+    </div>
+
+    {% for category, badges in grouped_badges.items() %}
+        <div class="badge-category-section">
+            <h2>{{ category }}</h2>
+
+            <div class="badge-grid">
+                {% for badge in badges %}
+                    <div class="badge-card {% if not badge.earned %}locked{% endif %} {% if badge.is_featured %}featured{% endif %}">
+                        <div class="badge-top">
+                            <div class="badge-big-icon">{{ badge.icon }}</div>
+
+                            <div class="badge-status">
+                                {% if badge.earned %}
+                                    <span class="earned-label">{{ t("badges", "earned") }}</span>
+                                {% else %}
+                                    <span class="locked-label">{{ t("badges", "locked") }}</span>
+                                {% endif %}
+                            </div>
+
+                            <div class="badge-main">
+                                <h3>{{ badge.name }}</h3>
+                                <p class="badge-description">{{ badge.description }}</p>
+
+                                {% if badge.earned and badge.date_awarded %}
+                                    <p class="badge-date">{{ t("badges", "earned_on") }} {{ badge.date_awarded | string | truncate(10, False, '') }}</p>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="badge-actions">
+                            {% if badge.earned %}
+                                {% if badge.is_featured %}
+                                    <form method="POST" action="{{ url_for('unfeature_badge', badge_id=badge.id) }}">
+                                        <button type="submit" class="badge-btn remove-btn">{{ t("badges", "remove_from_salon") }}</button>
+                                    </form>
+                                {% else %}
+                                    <form method="POST" action="{{ url_for('feature_badge', badge_id=badge.id) }}">
+                                        <button type="submit" class="badge-btn add-btn">{{ t("badges", "add_to_salon") }}</button>
+                                    </form>
+                                {% endif %}
+                            {% else %}
+                                <button type="button" class="badge-btn locked-btn" disabled>{{ t("badges", "locked_btn") }}</button>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    {% endfor %}
+</section>
+{% endblock %}

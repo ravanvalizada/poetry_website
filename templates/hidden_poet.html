@@ -1,0 +1,160 @@
+{% extends "base.html" %}
+{% block title %}Hidden Poet Game{% endblock %}
+{% block content %}
+<div class="salon-page">
+
+  <div class="salon-hero">
+    <h1 class="salon-title">{{ t("salon", "hidden_poet") }}</h1>
+    <p class="salon-subtitle">{{ t("salon", "hidden_subtitle") }}</p>
+    <p class="game-date-label">{{ today }}</p>
+  </div>
+
+  <!-- Streak / Stats bar -->
+  {% if streak %}
+  <div class="stats-bar">
+    <div class="stat-pill">🔥 Streak: <strong>{{ streak.current_streak }}</strong></div>
+    <div class="stat-pill">🏆 Best: <strong>{{ streak.best_streak }}</strong></div>
+    <div class="stat-pill">✅ Correct: <strong>{{ streak.total_correct }}</strong></div>
+    <div class="stat-pill">🎯 Accuracy:
+      <strong>
+        {% if streak.total_guesses > 0 %}
+          {{ "%.0f"|format(streak.total_correct / streak.total_guesses * 100) }}%
+        {% else %}0%{% endif %}
+      </strong>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Questions -->
+  {% if questions %}
+  <div class="questions-container">
+    {% for q in questions %}
+    {% set attempt = attempts.get(q.position) %}
+    {% set answer_poem = answered_poems.get(q.position) %}
+
+    <div class="question-card {% if attempt %}question-card--answered{% endif %}">
+      <div class="question-number">{{ t("hidden_poet_extra", "admin_question") }} {{ q.position }} of 3</div>
+
+      <div class="stanza-display">{{ q.stanza_text }}</div>
+
+      {% if not attempt %}
+        {% if session.get("username") %}
+        <form method="POST" action="{{ url_for('hidden_poet_answer') }}" class="guess-form">
+          <input type="hidden" name="question_pos" value="{{ q.position }}">
+          <div class="form-row">
+            <div class="form-group">
+              <label>{{ t("hidden_poet_extra", "author_label_guess") }}</label>
+              <input type="text" name="author_guess" placeholder="{{ t('salon', 'author_label') }}…" autocomplete="off">
+            </div>
+            <div class="form-group">
+              <label>{{ t("hidden_poet_extra", "poem_title_label") }}</label>
+              <input type="text" name="title_guess" placeholder="{{ t('salon', 'poem_label') }}…" autocomplete="off">
+            </div>
+          </div>
+          <button type="submit" class="btn-primary">{{ t("salon", "submit_guess") }}</button>
+        </form>
+        {% else %}
+        <p class="info-note"><a href="{{ url_for('login') }}">{{ t("nav", "login") }}</a> to play.</p>
+        {% endif %}
+
+      {% else %}
+        <!-- Reveal -->
+        <div class="reveal-box">
+          <div class="reveal-row">
+            <span class="reveal-label">{{ t("salon", "author_label") }}:</span>
+            <span class="reveal-answer">{{ answer_poem.author if answer_poem else '—' }}</span>
+            {% if attempt.author_correct %}
+              <span class="correct-badge">✓ Correct</span>
+            {% else %}
+              <span class="wrong-badge">✗ Your guess: "{{ attempt.author_guess or '(blank)' }}"</span>
+            {% endif %}
+          </div>
+          <div class="reveal-row">
+            <span class="reveal-label">{{ t("salon", "poem_label") }}:</span>
+            <span class="reveal-answer">{{ answer_poem.title if answer_poem else '—' }}</span>
+            {% if attempt.title_correct %}
+              <span class="correct-badge">✓ Correct</span>
+            {% else %}
+              <span class="wrong-badge">✗ Your guess: "{{ attempt.title_guess or '(blank)' }}"</span>
+            {% endif %}
+          </div>
+          {% if answer_poem %}
+          <a href="{{ url_for('poem_detail', poem_id=answer_poem.id) }}" class="reveal-poem-link">Read the full poem →</a>
+          {% endif %}
+        </div>
+      {% endif %}
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- Score summary once all 3 answered -->
+  {% if attempts|length == 3 %}
+  {% set total_correct = attempts.values()|sum(attribute='author_correct') + attempts.values()|sum(attribute='title_correct') %}
+  <div class="score-summary">
+    <h2 class="score-title">{{ t("salon", "todays_score") }}</h2>
+    <div class="score-display">{{ total_correct }} / 6</div>
+    <p class="score-sub">{{ t("salon", "come_back") }}</p>
+  </div>
+  {% endif %}
+
+  {% else %}
+  <p class="empty-state">{{ t("salon", "no_questions") }}</p>
+  {% endif %}
+
+  <!-- Admin: set questions -->
+  {% if session.get("is_admin") %}
+  <section class="salon-section admin-section">
+    <h2 class="section-heading">{{ t("salon", "admin_questions") }}</h2>
+    <form method="POST" action="{{ url_for('hidden_poet_set_questions') }}" class="salon-form">
+      <input type="hidden" name="game_date" value="{{ today }}">
+      {% for i in range(1, 4) %}
+      <div class="admin-question-block">
+        <h4>{{ t("hidden_poet_extra", "admin_question") }} {{ i }}</h4>
+        <div class="form-group">
+          <label>{{ t("hidden_poet_extra", "poem_id_label") }}</label>
+          <input type="number" name="poem_id_{{ i }}" placeholder="{{ t('hidden_poet_extra', 'poem_id_label') }}…">
+        </div>
+        <div class="form-group">
+          <label>{{ t("hidden_poet_extra", "stanza_label") }}</label>
+          <textarea name="stanza_{{ i }}" rows="4" placeholder="{{ t('hidden_poet_extra', 'stanza_label') }}…"></textarea>
+        </div>
+      </div>
+      {% endfor %}
+      <button type="submit" class="btn-primary">{{ t("salon", "save_questions") }}</button>
+    </form>
+  </section>
+  {% endif %}
+
+  <!-- Leaderboard -->
+  <section class="salon-section">
+    <h2 class="section-heading">{{ t("salon", "leaderboard") }}</h2>
+    {% if leaderboard %}
+    <table class="leaderboard-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>{{ t("hidden_poet_extra", "th_poet") }}</th>
+          <th>{{ t("hidden_poet_extra", "th_correct") }}</th>
+          <th>{{ t("hidden_poet_extra", "th_streak") }}</th>
+          <th>{{ t("hidden_poet_extra", "th_best") }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in leaderboard %}
+        <tr class="{% if loop.index == 1 %}rank-gold{% elif loop.index == 2 %}rank-silver{% elif loop.index == 3 %}rank-bronze{% endif %}">
+          <td>{{ loop.index }}</td>
+          <td>{{ row.username }}</td>
+          <td>{{ row.total_correct }}</td>
+          <td>{{ row.current_streak }}</td>
+          <td>{{ row.best_streak }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <p class="empty-state">{{ t("salon", "no_scores") }}</p>
+    {% endif %}
+  </section>
+
+</div>
+{% endblock %}

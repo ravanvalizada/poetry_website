@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block content %}
+
+<form method="post" class="upload-form">
+    <h2>{{ t("poem", "upload_title") }}</h2>
+
+    {% if error %}
+        <p class="form-error">{{ error }}</p>
+    {% endif %}
+
+    <label for="title">{{ t("poem", "title") }}</label>
+    <input id="title" name="title" placeholder="{{ t('poem', 'title') }}" required
+           value="{{ request.form.get('title', '') }}">
+
+    <label for="genre">{{ t("poem", "genre") }}</label>
+    <input id="genre" name="genre" placeholder="e.g. Qəzəl, Şeir, Rübai…" required
+           value="{{ request.form.get('genre', '') }}">
+
+    <label for="language">{{ t("poem", "language") }}</label>
+    <select id="language" name="language" required>
+        <option value="" disabled {% if not request.form.get('language') %}selected{% endif %}>{{ t("poem", "language") }}</option>
+        {% for lang in ['English', 'Azerbaijani', 'Turkish', 'Russian'] %}
+            <option value="{{ lang }}" {% if request.form.get('language') == lang %}selected{% endif %}>{{ lang }}</option>
+        {% endfor %}
+    </select>
+
+    <label for="text">{{ t("poem", "text") }}</label>
+    <textarea id="text" name="text" placeholder="{{ t('poem', 'text') }}"
+              required rows="18">{{ request.form.get('text', '') }}</textarea>
+
+    <button type="submit">{{ t("poem", "submit") }}</button>
+</form>
+
+<a href="{{ url_for('home') }}" style="display:inline-block; margin-top:16px;">← {{ t("common", "back") }}</a>
+
+{% endblock %}

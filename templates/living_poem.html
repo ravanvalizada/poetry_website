@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+{% block title %}The Living Poem{% endblock %}
+{% block content %}
+<div class="salon-page">
+
+  <div class="salon-hero">
+    <h1 class="salon-title">{{ t("salon", "living_poem") }}</h1>
+    <p class="salon-subtitle">{{ t("salon", "living_subtitle") }}</p>
+    <p class="living-total">{{ total_lines }} line{{ 's' if total_lines != 1 }} written so far</p>
+  </div>
+
+  <div class="living-layout">
+
+    <!-- LEFT: The Poem -->
+    <div class="living-poem-col">
+      {% if volumes %}
+        {% for vol_num, lines in volumes.items() %}
+        <div class="volume-section">
+          <h2 class="volume-heading">Volume {{ vol_num }}</h2>
+          <div class="living-lines">
+            {% for line in lines %}
+            <div class="living-line">
+              <span class="line-number">{{ line.line_number }}</span>
+              <span class="line-text">{{ line.line_text }}</span>
+              <a href="{{ url_for('profile', user_id=line.user_id) }}"
+                 class="line-author">{{ line.username }}</a>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+        {% endfor %}
+      {% else %}
+        <div class="living-poem-empty">
+          <p>{{ t("living_poem_extra", "not_begun") }}</p>
+          <p>{{ t("living_poem_extra", "join_first_line") }}</p>
+        </div>
+      {% endif %}
+
+      <!-- Add line form (only for position-1 user) -->
+      {% if session.get("user_id") and active_user and active_user.user_id == session["user_id"] %}
+      <div class="add-line-section">
+        <h3 class="section-subheading">{{ t("salon", "your_turn") }}</h3>
+        {% if deadline_ts %}
+        <p class="deadline-note">Your deadline:
+          <strong id="lineDeadline" data-deadline="{{ deadline_ts }}">{{ deadline_ts }}</strong>
+        </p>
+        {% endif %}
+        <form method="POST" action="{{ url_for('living_poem_add_line') }}" class="line-form">
+          <input type="text" name="line_text"
+                 placeholder="Write one line to continue the poem…"
+                 maxlength="200" required autocomplete="off">
+          <button type="submit" class="btn-primary">{{ t("salon", "add_line") }}</button>
+        </form>
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- RIGHT: Queue -->
+    <div class="living-sidebar">
+      <div class="queue-card">
+        <h3 class="card-subheading">{{ t("salon", "writing_queue") }}</h3>
+
+        {% if session.get("username") %}
+          {% if my_pos %}
+          <p class="queue-my-pos">You are <strong>#{{ my_pos }}</strong> in the queue.</p>
+          <form method="POST" action="{{ url_for('living_poem_leave') }}">
+            <button type="submit" class="btn-danger btn-sm">{{ t("salon", "leave_queue") }}</button>
+          </form>
+          {% else %}
+          <form method="POST" action="{{ url_for('living_poem_join') }}">
+            <button type="submit" class="btn-primary btn-sm">{{ t("salon", "join_queue") }}</button>
+          </form>
+          {% endif %}
+        {% else %}
+        <p class="info-note"><a href="{{ url_for('login') }}">Log in</a> to join the queue.</p>
+        {% endif %}
+
+        <div class="queue-capacity">{{ queue|length }} / 20 spots filled</div>
+
+        {% if queue %}
+        <ol class="queue-list"><!--
+          -->{% for q in queue %}<li class="queue-item {% if loop.index == 1 %}queue-item--active{% endif %}"><span class="queue-pos">{{ loop.index }}</span><a href="{{ url_for('profile', user_id=q.user_id) }}" class="queue-username">{{ q.username }}</a>{% if loop.index == 1 %}<span class="queue-turn-badge">Writing today</span>{% if q.deadline %}<span class="queue-deadline" id="queueCountdown" data-deadline="{{ q.deadline }}">…</span>{% endif %}{% else %}<span class="queue-in">in {{ loop.index - 1 }} day{{ 's' if loop.index - 1 != 1 }}</span>{% endif %}</li>{% endfor %}<!--
+        --></ol>
+        {% else %}
+        <p class="empty-state">{{ t("salon", "queue_empty") }}</p>
+        {% endif %}
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function timeRemaining(deadlineStr) {
+  const end = new Date(deadlineStr.replace(' ', 'T'));
+  const now = new Date();
+  const diff = Math.max(0, Math.floor((end - now) / 1000));
+  const h = Math.floor(diff / 3600);
+  const m = Math.floor((diff % 3600) / 60);
+  const s = diff % 60;
+  return `${h}h ${m}m ${s}s`;
+}
+
+const qc = document.getElementById("queueCountdown");
+if (qc && qc.dataset.deadline) {
+  const dl = qc.dataset.deadline;
+  qc.textContent = timeRemaining(dl);
+  setInterval(() => { qc.textContent = timeRemaining(dl); }, 1000);
+}
+
+const ld = document.getElementById("lineDeadline");
+if (ld && ld.dataset.deadline) {
+  const dl = ld.dataset.deadline;
+  setInterval(() => { ld.textContent = timeRemaining(dl); }, 1000);
+}
+</script>
+{% endblock %}

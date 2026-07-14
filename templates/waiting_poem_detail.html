@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="poem-detail">
+    <h2>{{ poem.title }}</h2>
+    <p class="meta">by {{ poem.author }} · {{ poem.date }}</p>
+
+    <pre>{{ poem.text }}</pre>
+
+    {% if session.get('user_id') != poem.user_id %}
+
+        {% if session.get('user_id') == poem.user_id or is_admin %}
+            <a href="{{ url_for('edit_poem', poem_id=poem.id) }}">Edit poem</a>
+        {% endif %}
+
+        {% if is_admin or avg_rating > 4.5 %}
+            <div class="waiting-actions" style="margin-top: 24px;">
+                <form method="post" action="{{ url_for('approve_poem', poem_id=poem.id) }}">
+                    <button type="submit" class="approve-btn">{{ t("poem", "approve_poem") }}</button>
+                </form>
+                <form method="post" action="{{ url_for('reject_poem', poem_id=poem.id) }}">
+                    <button type="submit" class="reject-btn">{{ t("poem", "reject_poem") }}</button>
+                </form>
+            </div>
+        {% else %}
+            <p class="info-note">
+                You need an average rating above 4.5 or admin status to approve or reject poems.
+            </p>
+        {% endif %}
+
+    {% else %}
+        <p class="own-poem-note">⛔ You cannot approve or reject your own poem.</p>
+    {% endif %}
+
+    <a href="{{ url_for('waiting_salon') }}" style="display:inline-block; margin-top:28px;">
+        ← Back to Waiting Salon
+    </a>
+</div>
+
+<style>
+.own-poem-note {
+    font-family: var(--font-serif);
+    font-style: italic;
+    color: #8c2a1a;
+    margin-top: 18px;
+}
+.info-note {
+    font-family: var(--font-serif);
+    font-style: italic;
+    color: var(--ink-muted);
+    margin-top: 18px;
+}
+.waiting-actions {
+    display: flex;
+    gap: 12px;
+}
+.approve-btn {
+    background: #2a5c2a;
+    color: var(--parchment);
+    border: none;
+    border-radius: 2px;
+    padding: 10px 22px;
+    font-family: var(--font-display);
+    font-size: 0.64rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+.approve-btn:hover { background: #3a7c3a; }
+.reject-btn {
+    background: transparent;
+    border: 1px solid #8c2a1a;
+    color: #8c2a1a;
+    border-radius: 2px;
+    padding: 10px 22px;
+    font-family: var(--font-display);
+    font-size: 0.64rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.reject-btn:hover { background: #8c2a1a; color: var(--parchment); }
+</style>
+
+{% endblock %}

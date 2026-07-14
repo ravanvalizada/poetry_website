@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}{{ poem.title }} — Chain Poem{% endblock %}
+{% block content %}
+<div class="chain-detail-page">
+
+  <div class="chain-detail-header">
+    <span class="collab-badge">From Collaboration Salon</span>
+    <h1 class="chain-detail-title">{{ poem.title }}</h1>
+    <p class="chain-detail-meta">
+      Started by <a href="{{ url_for('profile', user_id=poem.creator_id) }}">{{ poem.creator_name }}</a>
+      on {{ poem.created_at | string | truncate(10, False, "") }}
+      {% if poem.status == 'ended' %} · Completed {{ poem.ended_at | string | truncate(10, False, "") }}{% endif %}
+    </p>
+
+    <div class="contributors-row">
+      <span class="contributors-label">{{ t("salon", "contributors") }}:</span>
+      {% for c in contributors %}
+        <a href="{{ url_for('profile', user_id=c.id) }}" class="contributor-chip">{{ c.username }}</a>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="stanzas-container">
+    {% for stanza in stanzas %}
+    <div class="stanza-block">
+      <div class="stanza-header">
+        <span class="stanza-number">Stanza {{ stanza.position }}</span>
+        <a href="{{ url_for('profile', user_id=stanza.user_id) }}" class="stanza-author">{{ stanza.username }}</a>
+        <span class="stanza-date">{{ stanza.created_at | string | truncate(10, False, "") }}</span>
+      </div>
+      <div class="stanza-text">{{ stanza.stanza_text }}</div>
+    </div>
+    {% endfor %}
+  </div>
+
+  {% if poem.status == 'active' and session.get("user_id") %}
+  <div class="add-stanza-section">
+    <h3 class="section-subheading">{{ t("salon", "add_stanza") }}</h3>
+    {% if last_user_id == session.get("user_id") %}
+    <p class="info-note">{{ t("salon", "wait_stanza") }}</p>
+    {% else %}
+    <form method="POST" action="{{ url_for('chain_salon_add', poem_id=poem.id) }}">
+      <div class="form-group">
+        <textarea name="stanza_text" rows="5" placeholder="Continue the poem…" required></textarea>
+      </div>
+      <button type="submit" class="btn-primary">{{ t("salon", "add_stanza") }}</button>
+    </form>
+    {% endif %}
+  </div>
+
+  {% if poem.creator_id == session.get("user_id") %}
+  <div class="end-poem-section">
+    <form method="POST" action="{{ url_for('chain_salon_end', poem_id=poem.id) }}"
+          onsubmit="return confirm('End this collaboration and publish the poem?')">
+      <button type="submit" class="btn-danger">End Collaboration & Publish</button>
+    </form>
+  </div>
+  {% endif %}
+  {% endif %}
+
+  <a href="{{ url_for('chain_salon') }}" class="back-link">← Back to Chain Salon</a>
+</div>
+{% endblock %}

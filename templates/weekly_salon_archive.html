@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Weekly Theme Archive{% endblock %}
+{% block content %}
+<div class="salon-page">
+  <h1 class="salon-title">{{ t("salon", "past_themes_archive") }}</h1>
+  {% if archive %}
+  {% for theme_id, data in archive.items() %}
+  <section class="archive-theme-section">
+    <h2 class="archive-theme-title">{{ data.theme.title }}
+      <span class="archive-theme-dates">{{ data.theme.start_date }} — {{ data.theme.end_date }}</span>
+    </h2>
+    {% if data.poems %}
+    <div class="entries-grid">
+      {% for entry in data.poems %}
+      <div class="entry-card">
+        <h3 class="entry-title">{{ entry.title }}</h3>
+        <p class="entry-author">by <strong>{{ entry.username }}</strong></p>
+        <div class="entry-text-preview">{{ entry.text[:200] }}{% if entry.text|length > 200 %}…{% endif %}</div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <p class="empty-state">{{ t("salon", "no_theme_entries") }}</p>
+    {% endif %}
+  </section>
+  {% endfor %}
+  {% else %}
+  <p class="empty-state">{{ t("salon", "no_past_themes") }}</p>
+  {% endif %}
+  <a href="{{ url_for('weekly_salon') }}" class="back-link">← Back to Weekly Salon</a>
+</div>
+{% endblock %}

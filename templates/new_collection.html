@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% block title %}New Collection{% endblock %}
+{% block content %}
+<div class="form-page">
+  <div class="feature-page-head">
+    <div>
+      <h2>📚 New Collection</h2>
+      <p class="feature-page-sub">Group poems into a themed playlist</p>
+    </div>
+    <a href="{{ url_for('my_collections') }}" class="back-btn">← My Collections</a>
+  </div>
+
+  {% with msgs = get_flashed_messages() %}{% if msgs %}
+    {% for m in msgs %}<div class="salon-flash salon-flash--err">{{ m }}</div>{% endfor %}
+  {% endif %}{% endwith %}
+
+  <form method="post" class="salon-form">
+    <div class="salon-field">
+      <label for="name" class="salon-label">Collection name <span class="req">*</span></label>
+      <input type="text" id="name" name="name" class="salon-input" placeholder="e.g. Love Poems, Late Night Thoughts…" required maxlength="100">
+    </div>
+    <div class="salon-field">
+      <label for="description" class="salon-label">Description <span class="opt">(optional)</span></label>
+      <textarea id="description" name="description" class="salon-textarea" rows="3" placeholder="What unites these poems?" maxlength="300"></textarea>
+    </div>
+    <div class="salon-field">
+      <p class="salon-label">Visibility</p>
+      <div class="vis-toggle" id="vis-toggle">
+        <button type="button" class="vis-opt vis-opt--active" data-val="1" id="vis-pub">🌍 Public</button>
+        <button type="button" class="vis-opt" data-val="0" id="vis-pri">🔒 Private</button>
+      </div>
+      <input type="hidden" name="is_public" id="is_public_val" value="1">
+      <p class="vis-hint" id="vis-hint">Public collections can be discovered and followed by other users.</p>
+    </div>
+    <button type="submit" class="salon-btn">{{ t("collections", "create_btn") }}</button>
+  </form>
+</div>
+
+<style>
+.form-page { max-width: 560px; margin: 0 auto; padding: 32px 20px 60px; }
+.feature-page-head { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 32px; gap: 16px; flex-wrap: wrap; }
+.feature-page-head h2 { font-size: clamp(1.4rem,3vw,2rem); margin: 0 0 4px; }
+.feature-page-sub { margin: 0; color: var(--ink-muted); font-family: var(--font-serif); font-style: italic; }
+.back-btn { display: inline-block; padding: 7px 14px; border: 1px solid var(--border); border-radius: 2px; font-family: var(--font-display); font-size: .58rem; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-soft); text-decoration: none; transition: background .15s; white-space: nowrap; }
+.back-btn:hover { background: var(--parchment-mid); }
+.salon-flash { background: var(--vellum); border-left: 3px solid var(--sepia); padding: 10px 16px; margin-bottom: 20px; font-size: .95rem; }
+.salon-flash--err { border-color: #c0392b; }
+.salon-form { background: var(--vellum); border: 1px solid var(--border-soft); border-radius: 3px; padding: 28px 32px; }
+.salon-field { margin-bottom: 22px; }
+.salon-label { display: block; font-family: var(--font-display); font-size: .6rem; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-soft); margin-bottom: 8px; }
+.req { color: var(--sepia); }
+.opt { font-family: var(--font-body); text-transform: none; letter-spacing: 0; color: var(--ink-muted); font-size: .85rem; }
+.salon-input, .salon-textarea { width: 100%; padding: 9px 12px; border: 1px solid var(--border); border-radius: 2px; background: var(--parchment); color: var(--ink); font-family: var(--font-body); font-size: 1rem; box-sizing: border-box; transition: border-color .15s; }
+.salon-input:focus, .salon-textarea:focus { border-color: var(--sepia); outline: none; }
+.salon-textarea { resize: vertical; }
+.vis-toggle { display: flex; border: 1px solid var(--border); border-radius: 2px; overflow: hidden; width: fit-content; margin-bottom: 8px; }
+.vis-opt { padding: 8px 20px; background: var(--parchment); color: var(--ink-muted); border: none; cursor: pointer; font-family: var(--font-display); font-size: .58rem; letter-spacing: .1em; text-transform: uppercase; transition: background .15s, color .15s; }
+.vis-opt + .vis-opt { border-left: 1px solid var(--border); }
+.vis-opt--active { background: var(--ink-soft); color: var(--parchment); }
+.vis-hint { margin: 0; font-family: var(--font-serif); font-style: italic; font-size: .88rem; color: var(--ink-muted); }
+.salon-btn { background: var(--ink-soft); color: var(--parchment); border: none; border-radius: 2px; padding: 10px 24px; font-family: var(--font-display); font-size: .6rem; letter-spacing: .14em; text-transform: uppercase; cursor: pointer; transition: background .2s; }
+.salon-btn:hover { background: var(--sepia); }
+</style>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const toggle   = document.getElementById("vis-toggle");
+  const hiddenIn = document.getElementById("is_public_val");
+  const hint     = document.getElementById("vis-hint");
+  const hints    = {
+    "1": "Public collections can be discovered and followed by other users.",
+    "0": "Private collections are only visible to you in your Savings page."
+  };
+  toggle?.querySelectorAll(".vis-opt").forEach(btn => {
+    btn.addEventListener("click", () => {
+      toggle.querySelectorAll(".vis-opt").forEach(b => b.classList.remove("vis-opt--active"));
+      btn.classList.add("vis-opt--active");
+      hiddenIn.value = btn.dataset.val;
+      hint.textContent = hints[btn.dataset.val];
+    });
+  });
+});
+</script>
+{% endblock %}

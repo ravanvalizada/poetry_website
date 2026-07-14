@@ -1,0 +1,211 @@
+{% extends "base.html" %}
+{% block title %}Export Card — {{ poem.title }}{% endblock %}
+{% block content %}
+<div class="feature-page">
+  <div class="feature-page-head">
+    <div>
+      <h2>🖼 Export Card</h2>
+      <p class="feature-page-sub"><em>{{ poem.title }}</em></p>
+    </div>
+    <a href="{{ url_for('poem_detail', poem_id=poem.id) }}" class="back-btn">← Back to poem</a>
+  </div>
+
+  <div class="export-layout">
+
+    <div class="export-controls">
+      <div class="ctrl-group">
+        <label class="ctrl-label">Quote text</label>
+        <textarea id="ec-text" class="ctrl-textarea" rows="5" aria-label="Quote text">{{ poem.text[:200] }}</textarea>
+      </div>
+
+      <div class="ctrl-group">
+        <label class="ctrl-label">Background</label>
+        <div class="theme-picker" id="theme-picker">
+          <button type="button" class="theme-chip theme-chip--active" data-theme="parchment">Parchment</button>
+          <button type="button" class="theme-chip" data-theme="night">Night</button>
+          <button type="button" class="theme-chip" data-theme="rose">Rose</button>
+          <button type="button" class="theme-chip" data-theme="ocean">Ocean</button>
+          <button type="button" class="theme-chip" data-theme="forest">Forest</button>
+          <button type="button" class="theme-chip" data-theme="gold">Gold</button>
+        </div>
+      </div>
+
+      <div class="ctrl-group">
+        <label class="ctrl-label" for="ec-font">{{ t("export", "font_label") }}</label>
+        <select id="ec-font" class="ctrl-select">
+          <option value="'IM Fell English', Georgia, serif">IM Fell English</option>
+          <option value="'Cormorant Garamond', Georgia, serif">Cormorant Garamond</option>
+          <option value="Georgia, serif">Georgia</option>
+          <option value="'Cinzel', serif">Cinzel</option>
+        </select>
+      </div>
+
+      <div class="ctrl-group">
+        <label class="ctrl-label" for="ec-format">{{ t("export", "format_label") }}</label>
+        <select id="ec-format" class="ctrl-select">
+          <option value="square">{{ t("export", "format_square") }}</option>
+          <option value="portrait">{{ t("export", "format_portrait") }}</option>
+          <option value="story">{{ t("export", "format_story") }}</option>
+        </select>
+      </div>
+
+      <div class="ctrl-group">
+        <label class="ctrl-label">Show</label>
+        <div class="toggle-list">
+          <label class="tog-row">
+            <span class="tog-track" id="tog-author">
+              <span class="tog-thumb"></span>
+            </span>
+            <span class="tog-text">Author name</span>
+          </label>
+          <label class="tog-row">
+            <span class="tog-track tog-on" id="tog-title">
+              <span class="tog-thumb"></span>
+            </span>
+            <span class="tog-text">Poem title</span>
+          </label>
+          <label class="tog-row">
+            <span class="tog-track" id="tog-site">
+              <span class="tog-thumb"></span>
+            </span>
+            <span class="tog-text">Poetry Salon watermark</span>
+          </label>
+        </div>
+      </div>
+
+      <button id="ec-download" class="salon-btn" style="width:100%;margin-top:4px;">⬇ Download as Image</button>
+      <p class="ec-fallback-hint" id="ec-hint" style="display:none">Right-click the preview card and choose <em>Save image as…</em></p>
+    </div>
+
+    <div class="export-preview-area">
+      <p class="ctrl-label">Preview</p>
+      <div id="ec-card" class="ec-card ec-parchment ec-square">
+        <blockquote class="ec-quote" id="ec-quote">{{ poem.text[:200] }}</blockquote>
+        <div class="ec-attribution" id="ec-attribution">
+          <span id="ec-attr-author">— {{ poem.author }}</span><span id="ec-attr-title">, <em>{{ poem.title }}</em></span>
+        </div>
+        <div class="ec-watermark hidden" id="ec-watermark">Poetry Salon</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<style>
+.feature-page { max-width: 1020px; margin: 0 auto; padding: 32px 20px 60px; }
+.feature-page-head { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 32px; gap: 16px; flex-wrap: wrap; }
+.feature-page-head h2 { font-size: clamp(1.4rem,3vw,2rem); margin: 0 0 4px; }
+.feature-page-sub { margin: 0; color: var(--ink-muted); font-family: var(--font-serif); font-style: italic; }
+.back-btn { display: inline-block; padding: 7px 14px; border: 1px solid var(--border); border-radius: 2px; font-family: var(--font-display); font-size: .58rem; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-soft); text-decoration: none; transition: background .15s; white-space: nowrap; }
+.back-btn:hover { background: var(--parchment-mid); }
+.export-layout { display: grid; grid-template-columns: 300px 1fr; gap: 32px; }
+@media (max-width: 680px) { .export-layout { grid-template-columns: 1fr; } }
+.export-controls { display: flex; flex-direction: column; gap: 20px; }
+.ctrl-group { display: flex; flex-direction: column; gap: 7px; }
+.ctrl-label { font-family: var(--font-display); font-size: .58rem; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-soft); }
+.ctrl-textarea { padding: 9px 12px; border: 1px solid var(--border); border-radius: 2px; background: var(--parchment); color: var(--ink); font-family: var(--font-body); font-size: .95rem; resize: vertical; }
+.ctrl-textarea:focus { border-color: var(--sepia); outline: none; }
+.ctrl-select { padding: 8px 12px; border: 1px solid var(--border); border-radius: 2px; background: var(--parchment); color: var(--ink); font-family: var(--font-body); font-size: .95rem; cursor: pointer; }
+.ctrl-select:focus { border-color: var(--sepia); outline: none; }
+/* Theme picker */
+.theme-picker { display: flex; flex-wrap: wrap; gap: 6px; }
+.theme-chip { padding: 5px 12px; border: 1px solid var(--border); border-radius: 2px; background: var(--parchment); color: var(--ink-soft); cursor: pointer; font-family: var(--font-display); font-size: .54rem; letter-spacing: .1em; text-transform: uppercase; transition: all .15s; }
+.theme-chip:hover { border-color: var(--sepia); color: var(--sepia); }
+.theme-chip--active { background: var(--ink-soft); color: var(--parchment); border-color: var(--ink-soft); }
+/* Toggle switches */
+.toggle-list { display: flex; flex-direction: column; gap: 10px; }
+.tog-row { display: flex; align-items: center; gap: 10px; cursor: pointer; -webkit-user-select: none; user-select: none; }
+.tog-track { display: flex; align-items: center; width: 36px; height: 20px; background: var(--border); border-radius: 10px; padding: 2px; transition: background .2s; flex-shrink: 0; cursor: pointer; }
+.tog-track.tog-on { background: var(--ink-soft); }
+.tog-thumb { width: 16px; height: 16px; background: #fff; border-radius: 50%; transition: transform .2s; }
+.tog-track.tog-on .tog-thumb { transform: translateX(16px); }
+.tog-text { font-family: var(--font-body); font-size: .92rem; color: var(--ink-soft); }
+/* Salon button */
+.salon-btn { background: var(--ink-soft); color: var(--parchment); border: none; border-radius: 2px; padding: 10px 22px; font-family: var(--font-display); font-size: .6rem; letter-spacing: .14em; text-transform: uppercase; cursor: pointer; transition: background .2s; }
+.salon-btn:hover { background: var(--sepia); }
+.ec-fallback-hint { margin: 6px 0 0; font-family: var(--font-serif); font-style: italic; font-size: .85rem; color: var(--ink-muted); }
+/* Preview card */
+.export-preview-area { display: flex; flex-direction: column; gap: 10px; }
+.ec-card { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px; border-radius: 4px; overflow: hidden; transition: all .25s; }
+.ec-square  { aspect-ratio: 1/1;   max-width: 420px; }
+.ec-portrait { aspect-ratio: 4/5;  max-width: 340px; }
+.ec-story   { aspect-ratio: 9/16; max-width: 240px; }
+.ec-quote { margin: 0 0 18px; font-style: italic; line-height: 1.8; text-align: center; white-space: pre-line; font-size: 1.05rem; }
+.ec-attribution { font-size: .88rem; text-align: center; opacity: .8; }
+.ec-watermark { margin-top: 20px; font-size: .7rem; letter-spacing: .15em; text-transform: uppercase; opacity: .45; }
+/* Themes */
+.ec-parchment { background: #f5e6c8; color: #3d2b1f; }
+.ec-night     { background: #1a1a2e; color: #e8e0d0; }
+.ec-rose      { background: #f5e4e4; color: #4a2020; }
+.ec-ocean     { background: #d0e8f0; color: #1a3040; }
+.ec-forest    { background: #d4ead4; color: #1a3020; }
+.ec-gold      { background: linear-gradient(135deg,#d4af37,#f0c040); color: #3d2b00; }
+.hidden { display: none !important; }
+</style>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" crossorigin="anonymous"></script>
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const card    = document.getElementById("ec-card");
+  const quoteEl = document.getElementById("ec-quote");
+  const attrAuthor = document.getElementById("ec-attr-author");
+  const attrTitle  = document.getElementById("ec-attr-title");
+  const watermark  = document.getElementById("ec-watermark");
+
+  /* Text */
+  document.getElementById("ec-text").addEventListener("input", function() {
+    quoteEl.textContent = this.value;
+  });
+
+  /* Theme */
+  const themes = ["parchment","night","rose","ocean","forest","gold"];
+  document.getElementById("theme-picker").querySelectorAll(".theme-chip").forEach(btn => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll(".theme-chip").forEach(b => b.classList.remove("theme-chip--active"));
+      btn.classList.add("theme-chip--active");
+      themes.forEach(t => card.classList.remove(`ec-${t}`));
+      card.classList.add(`ec-${btn.dataset.theme}`);
+    });
+  });
+
+  /* Font */
+  document.getElementById("ec-font").addEventListener("change", function() {
+    card.style.fontFamily = this.value;
+  });
+
+  /* Format */
+  document.getElementById("ec-format").addEventListener("change", function() {
+    ["square","portrait","story"].forEach(f => card.classList.remove(`ec-${f}`));
+    card.classList.add(`ec-${this.value}`);
+  });
+
+  /* Toggles */
+  function makeToggle(id, el) {
+    const track = document.getElementById(id);
+    let on = track.classList.contains("tog-on");
+    track.addEventListener("click", () => {
+      on = !on;
+      track.classList.toggle("tog-on", on);
+      el.classList.toggle("hidden", !on);
+    });
+  }
+  makeToggle("tog-author", attrAuthor);
+  makeToggle("tog-title",  attrTitle);
+  makeToggle("tog-site",   watermark);
+  // Author default off, title default on
+  attrAuthor.classList.add("hidden");
+
+  /* Download */
+  document.getElementById("ec-download").addEventListener("click", async () => {
+    if (typeof html2canvas === "undefined") {
+      document.getElementById("ec-hint").style.display = "block"; return;
+    }
+    const canvas = await html2canvas(card, { useCORS: true, scale: 2 });
+    const a = document.createElement("a");
+    a.download = "poetry-card.png";
+    a.href = canvas.toDataURL("image/png");
+    a.click();
+  });
+});
+</script>
+{% endblock %}

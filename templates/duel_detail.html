@@ -1,0 +1,143 @@
+{% extends "base.html" %}
+{% block title %}Duel: {{ duel.challenger_name }} vs {{ duel.challenged_name }}{% endblock %}
+
+{% block content %}
+<div class="salon-page">
+  <div class="duel-header">
+    <p class="theme-label">Theme: {{ duel.theme_title }}</p>
+
+    <h1 class="duel-title">
+      {{ duel.challenger_name }}
+      <span class="vs-large">vs</span>
+      {{ duel.challenged_name }}
+    </h1>
+
+    <span class="duel-status duel-status--{{ duel.status }}">{{ duel.status|title }}</span>
+
+    {% if duel.status != 'closed' %}
+      <p class="info-note">
+        This duel will end automatically in
+        <span id="duelCountdown" data-seconds="{{ duel_time_left }}">{{ duel_time_left }}</span>.
+      </p>
+    {% else %}
+      <p class="info-note">This duel ended automatically after 24 hours.</p>
+    {% endif %}
+  </div>
+
+  {% if duel.status == 'pending' and session.get("user_id") == duel.challenged_id %}
+  <div class="duel-accept-box">
+    <p>{{ t("duel", "pending_msg") }}</p>
+    <form method="POST" action="{{ url_for('duel_accept', duel_id=duel.id) }}">
+      <button type="submit" class="btn-primary">Accept Challenge</button>
+    </form>
+  </div>
+  {% endif %}
+
+  <div class="duel-poems-grid">
+    <!-- Challenger -->
+    <div class="duel-poem-card {% if duel.winner_id == duel.challenger_id %}duel-winner{% endif %}">
+      <h2 class="duel-poet-name">
+        {{ duel.challenger_name }}
+        {% if duel.winner_id == duel.challenger_id %}
+          <span class="winner-crown">👑 Winner</span>
+        {% endif %}
+      </h2>
+
+      {% if challenger_poem %}
+        <h3 class="duel-poem-title">{{ challenger_poem.title }}</h3>
+        <div class="duel-poem-text">{{ challenger_poem.text }}</div>
+      {% else %}
+        <p class="empty-state">No poem submitted yet.</p>
+      {% endif %}
+
+      <div class="vote-count">{{ challenger_votes }} vote{{ 's' if challenger_votes != 1 }}</div>
+
+      {% if duel.status == 'active'
+            and session.get("user_id")
+            and session["user_id"] not in (duel.challenger_id, duel.challenged_id)
+            and not user_vote %}
+      <form method="POST" action="{{ url_for('duel_vote', duel_id=duel.id) }}">
+        <input type="hidden" name="voted_for" value="{{ duel.challenger_id }}">
+        <button type="submit" class="btn-primary btn-vote">Vote for {{ duel.challenger_name }}</button>
+      </form>
+      {% endif %}
+    </div>
+
+    <!-- Challenged -->
+    <div class="duel-poem-card {% if duel.winner_id == duel.challenged_id %}duel-winner{% endif %}">
+      <h2 class="duel-poet-name">
+        {{ duel.challenged_name }}
+        {% if duel.winner_id == duel.challenged_id %}
+          <span class="winner-crown">👑 Winner</span>
+        {% endif %}
+      </h2>
+
+      {% if challenged_poem %}
+        <h3 class="duel-poem-title">{{ challenged_poem.title }}</h3>
+        <div class="duel-poem-text">{{ challenged_poem.text }}</div>
+      {% else %}
+        <p class="empty-state">No poem submitted yet.</p>
+      {% endif %}
+
+      <div class="vote-count">{{ challenged_votes }} vote{{ 's' if challenged_votes != 1 }}</div>
+
+      {% if duel.status == 'active'
+            and session.get("user_id")
+            and session["user_id"] not in (duel.challenger_id, duel.challenged_id)
+            and not user_vote %}
+      <form method="POST" action="{{ url_for('duel_vote', duel_id=duel.id) }}">
+        <input type="hidden" name="voted_for" value="{{ duel.challenged_id }}">
+        <button type="submit" class="btn-primary btn-vote">Vote for {{ duel.challenged_name }}</button>
+      </form>
+      {% endif %}
+    </div>
+  </div>
+
+  {% if user_vote %}
+    <p class="info-note">You have voted in this duel.</p>
+  {% endif %}
+
+  {% if duel.status == 'closed' and not duel.winner_id %}
+    <p class="info-note draw-note">This duel ended in a draw.</p>
+  {% endif %}
+
+  <a href="{{ url_for('weekly_salon') }}" class="back-link">← Back to Weekly Salon</a>
+</div>
+
+{% if duel.status != 'closed' %}
+<script>
+  (function () {
+    const el = document.getElementById("duelCountdown");
+    if (!el) return;
+
+    let seconds = parseInt(el.dataset.seconds || "0", 10);
+
+    function formatTime(totalSeconds) {
+      const hrs = Math.floor(totalSeconds / 3600);
+      const mins = Math.floor((totalSeconds % 3600) / 60);
+      const secs = totalSeconds % 60;
+
+      return (
+        String(hrs).padStart(2, "0") + ":" +
+        String(mins).padStart(2, "0") + ":" +
+        String(secs).padStart(2, "0")
+      );
+    }
+
+    function tick() {
+      if (seconds <= 0) {
+        el.textContent = "00:00:00";
+        location.reload();
+        return;
+      }
+
+      el.textContent = formatTime(seconds);
+      seconds -= 1;
+    }
+
+    tick();
+    setInterval(tick, 1000);
+  })();
+</script>
+{% endif %}
+{% endblock %}

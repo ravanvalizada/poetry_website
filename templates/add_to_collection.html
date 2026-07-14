@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% block title %}{{ t("collections", "add_title") }}{% endblock %}
+{% block content %}
+<div class="form-page">
+  <div class="feature-page-head">
+    <div>
+      <h2>{{ t("collections", "add_title") }}</h2>
+      <p class="feature-page-sub"><em>{{ poem.title }}</em></p>
+    </div>
+    <a href="{{ url_for('poem_detail', poem_id=poem.id) }}" class="back-btn">← {{ t("common", "back") }}</a>
+  </div>
+
+  {% with msgs = get_flashed_messages() %}{% if msgs %}
+    {% for m in msgs %}<div class="salon-flash">{{ m }}</div>{% endfor %}
+  {% endif %}{% endwith %}
+
+  {% if my_cols %}
+  <form method="post" class="salon-form">
+    <div class="salon-field">
+      <p class="salon-label">{{ t("collections", "choose") }}</p>
+      <div class="radio-list">
+        {% for col in my_cols %}
+        <label class="radio-item {% if col.id in already_in %}radio-item--done{% endif %}">
+          <input type="radio" name="collection_id" value="{{ col.id }}"
+                 {% if col.id in already_in %}disabled{% endif %} required>
+          <span class="radio-item-name">{{ col.name }}</span>
+          <span class="radio-item-meta">
+            {{ '🌍' if col.is_public else '🔒' }}
+            {% if col.id in already_in %}<span class="already-tag">{{ t("collections", "already_added") }}</span>{% endif %}
+          </span>
+        </label>
+        {% endfor %}
+      </div>
+    </div>
+    <div class="form-btns">
+      <button type="submit" class="salon-btn">{{ t("collections", "add_selected") }}</button>
+      <a href="{{ url_for('new_collection') }}" class="back-btn">{{ t("collections", "new_btn") }}</a>
+    </div>
+  </form>
+  {% else %}
+  <div class="empty-salon">
+    <p>{{ t("collections", "no_collections") }}</p>
+    <a href="{{ url_for('new_collection') }}" class="salon-btn-link" style="display:inline-block;margin-top:16px;">{{ t("collections", "create_first") }} →</a>
+  </div>
+  {% endif %}
+</div>
+
+<style>
+.form-page { max-width: 520px; margin: 0 auto; padding: 32px 20px 60px; }
+.feature-page-head { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 32px; gap: 16px; flex-wrap: wrap; }
+.feature-page-head h2 { font-size: clamp(1.4rem,3vw,2rem); margin: 0 0 4px; }
+.feature-page-sub { margin: 0; color: var(--ink-muted); font-family: var(--font-serif); font-style: italic; }
+.back-btn { display: inline-block; padding: 7px 14px; border: 1px solid var(--border); border-radius: 2px; font-family: var(--font-display); font-size: .58rem; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-soft); text-decoration: none; transition: background .15s; white-space: nowrap; }
+.back-btn:hover { background: var(--parchment-mid); }
+.salon-flash { background: var(--vellum); border-left: 3px solid var(--sepia); padding: 10px 16px; margin-bottom: 20px; font-size: .95rem; }
+.salon-form { background: var(--vellum); border: 1px solid var(--border-soft); border-radius: 3px; padding: 28px 32px; }
+.salon-field { margin-bottom: 22px; }
+.salon-label { font-family: var(--font-display); font-size: .6rem; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-soft); margin-bottom: 12px; display: block; }
+.radio-list { display: flex; flex-direction: column; gap: 8px; }
+.radio-item { display: flex; align-items: center; gap: 12px; padding: 10px 14px; border: 1px solid var(--border); border-radius: 2px; cursor: pointer; transition: background .15s, border-color .15s; background: var(--parchment); }
+.radio-item:not(.radio-item--done):hover { border-color: var(--sepia); background: var(--parchment-mid); }
+.radio-item--done { opacity: .65; cursor: default; }
+.radio-item input { margin: 0; accent-color: var(--sepia); }
+.radio-item-name { flex: 1; font-family: var(--font-body); font-size: .97rem; }
+.radio-item-meta { font-family: var(--font-display); font-size: .54rem; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-muted); display: flex; gap: 6px; align-items: center; }
+.already-tag { background: var(--parchment-mid); padding: 2px 6px; border-radius: 2px; color: var(--sepia); }
+.form-btns { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.salon-btn { background: var(--ink-soft); color: var(--parchment); border: none; border-radius: 2px; padding: 10px 22px; font-family: var(--font-display); font-size: .6rem; letter-spacing: .14em; text-transform: uppercase; cursor: pointer; transition: background .2s; }
+.salon-btn:hover { background: var(--sepia); }
+.salon-btn-link { display: inline-block; padding: 7px 16px; background: var(--ink-soft); color: var(--parchment); border-radius: 2px; font-family: var(--font-display); font-size: .58rem; letter-spacing: .12em; text-transform: uppercase; text-decoration: none; transition: background .2s; }
+.salon-btn-link:hover { background: var(--sepia); color: var(--parchment); }
+.empty-salon { background: var(--vellum); border: 1px solid var(--border-soft); padding: 40px 28px; text-align: center; font-family: var(--font-serif); font-style: italic; color: var(--ink-muted); border-radius: 3px; }
+</style>
+{% endblock %}

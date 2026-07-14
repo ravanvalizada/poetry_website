@@ -1,0 +1,568 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="poem-detail" data-poem-id="{{ poem.id }}">
+
+  <h2>{{ poem.title }}</h2>
+  <p class="meta">
+    <a href="{{ url_for('profile', user_id=poem.user_id) }}" class="poem-author-link">{{ poem.author }}</a>
+    | {{ poem.genre }} | {{ poem.date }}
+  </p>
+  <p class="poem-stats-line">
+    {% if avg_rating %}⭐ {{ avg_rating }}{% else %}No ratings yet{% endif %}
+    &nbsp;·&nbsp; {{ poem.view_count or 0 }} views
+  </p>
+
+  <div class="poem-actions-bar">
+    {% if current_user_id %}
+    <button type="button" id="save-poem-btn" class="save-poem-btn {% if is_saved %}saved{% endif %}">
+      {% if is_saved %}Saved ✓{% else %}Save Poem ☆{% endif %}
+    </button>
+    {% endif %}
+    <a href="{{ url_for('poem_recitations', poem_id=poem.id) }}" class="pd-action-btn">🎙 Recitations</a>
+    {% if current_user_id %}
+    <a href="{{ url_for('add_to_collection', poem_id=poem.id) }}" class="pd-action-btn">📚 Add to Collection</a>
+    {% endif %}
+    <a href="{{ url_for('export_card', poem_id=poem.id) }}" class="pd-action-btn">🖼 Export Card</a>
+    {% if current_user_id == poem.user_id or session.is_admin %}
+    <a href="{{ url_for('poem_stats', poem_id=poem.id) }}" class="pd-action-btn pd-action-btn--accent">📊 Stats</a>
+    <a href="{{ url_for('edit_poem', poem_id=poem.id) }}" class="pd-action-btn">Edit</a>
+    {% endif %}
+  </div>
+
+  <div class="poem-body" id="poem-body">
+    {% for line in poem.text.split('\n') %}
+    <div class="poem-line" data-line="{{ loop.index0 }}">
+      <span class="poem-line-text">{{ line if line.strip() else '\u00a0' }}</span>
+      <button class="lc-btn" data-line="{{ loop.index0 }}" title="Line comments">
+        <span class="lc-count" id="lc-{{ loop.index0 }}"></span>
+      </button>
+    </div>
+    {% endfor %}
+  </div>
+
+  <pre id="poem-text" style="display:none">{{ poem.text }}</pre>
+  <button type="button" id="save-quote-btn"  class="save-quote-btn floating-quote-btn  hidden">Save Quote ✨</button>
+  <button type="button" id="share-quote-btn" class="share-quote-btn floating-share-quote-btn hidden">Share Quote 🌍</button>
+
+  {% if current_user_id %}
+  <div class="new-comment">
+    <form method="post">
+      <label for="rating">{{ t("poem", "rate_label") }}</label>
+      <select id="rating" name="rating" aria-label="{{ t('poem', 'rate_label') }}">
+        {% for i in range(1, 6) %}<option value="{{ i }}">{{ i }}</option>{% endfor %}
+      </select>
+      <label for="comment">{{ t("poem", "comment_label") }}</label>
+      <textarea id="comment" name="comment" placeholder="{{ t('comments', 'write') }}"></textarea>
+      <button type="submit">{{ t("poem", "post_btn") }}</button>
+    </form>
+  </div>
+  {% endif %}
+
+  <div id="commentsList">
+    {% for comment in comments %}
+    <div class="comment" id="comment-{{ comment.comment_id }}">
+      <div class="comment-header">
+        <span class="comment-author">@{{ comment.username }}</span>
+        <span class="comment-actions">
+          {% if current_user_id == comment.user_id or current_user_id == poem.user_id %}
+          <form method="post" action="{{ url_for('delete_comment', comment_id=comment.comment_id) }}"
+                class="delete-comment-form" onsubmit="return confirm('Delete this comment?');">
+            <button type="submit" class="delete-btn">Delete</button>
+          </form>
+          {% endif %}
+          {% if current_user_id %}
+          <button class="reply-btn" data-target="reply-{{ comment.comment_id }}">Reply</button>
+          {% endif %}
+          <button class="copy-btn">Copy</button>
+          <button class="share-btn">Share</button>
+        </span>
+      </div>
+      <div class="comment-body {% if comment.deleted %}deleted{% endif %}">
+        {{ "[deleted]" if comment.deleted else comment.comment }}
+      </div>
+      {% if comment.replies|length > 0 %}
+      <button class="toggle-replies-btn" data-target="replies-{{ comment.comment_id }}">
+        View replies ({{ comment.replies|length }})
+      </button>
+      {% endif %}
+      <div class="replies hidden" id="replies-{{ comment.comment_id }}">
+        {% for reply in comment.replies %}
+        <div class="comment reply" id="comment-{{ reply.comment_id }}">
+          <div class="comment-header">
+            <span class="comment-author">@{{ reply.username }}</span>
+            <span class="comment-actions">
+              {% if current_user_id == reply.user_id or current_user_id == poem.user_id %}
+              <form method="post" action="{{ url_for('delete_comment', comment_id=reply.comment_id) }}"
+                    class="delete-comment-form" onsubmit="return confirm('Delete?');">
+                <button type="submit" class="delete-btn">Delete</button>
+              </form>
+              {% endif %}
+              {% if current_user_id %}
+              <button class="reply-btn" data-target="reply-{{ comment.comment_id }}" data-tag="{{ reply.username }}">Reply</button>
+              {% endif %}
+              <button class="copy-btn">Copy</button>
+              <button class="share-btn">Share</button>
+            </span>
+          </div>
+          <div class="comment-body">{{ "[deleted]" if reply.deleted else reply.comment }}</div>
+        </div>
+        {% endfor %}
+      </div>
+      {% if current_user_id %}
+      <div class="reply-input hidden" id="reply-{{ comment.comment_id }}">
+        <form method="post">
+          <input type="hidden" name="parent_id" value="{{ comment.comment_id }}">
+          <input type="hidden" name="reply_tag" value="">
+          <textarea name="comment" placeholder="{{ t('comments', 'write') }}"></textarea>
+          <button type="submit">{{ t("poem", "reply_submit") }}</button>
+        </form>
+      </div>
+      {% endif %}
+    </div>
+    {% endfor %}
+  </div>
+
+  <div class="poem-share-fab" id="poemShareBtn" title="Share">🔗</div>
+  <div class="poem-share-menu hidden" id="poemShareMenu">
+    <a id="share-instagram" href="#">Instagram</a>
+    <a id="share-whatsapp" target="_blank">WhatsApp</a>
+    <a id="share-facebook" target="_blank">Facebook</a>
+    <a id="share-x" target="_blank">X</a>
+    <button id="copy-poem-link">{{ t("poem", "copy_link") }}</button>
+  </div>
+</div>
+
+{# ── Line comment panel ── #}
+<div id="lc-overlay" class="lc-overlay hidden"></div>
+<div id="lc-panel" class="lc-panel hidden" role="dialog">
+  <div class="lc-panel-head">
+    <span class="lc-panel-title">Line <strong id="lc-panel-num"></strong></span>
+    <button id="lc-panel-close" class="lc-panel-close">✕</button>
+  </div>
+  <div class="lc-panel-comments" id="lc-panel-comments"></div>
+  {% if current_user_id %}
+  <div class="lc-panel-form">
+    <textarea id="lc-panel-input" rows="2" placeholder="Comment on this line…"></textarea>
+    <button id="lc-panel-submit" class="lc-panel-submit">Post</button>
+  </div>
+  {% else %}
+  <p class="lc-panel-login"><a href="{{ url_for('login') }}">Log in</a> to comment.</p>
+  {% endif %}
+</div>
+
+{# ── Share-quote modal ── #}
+<div id="shareQuoteModal" class="modal">
+  <div class="modal-content share-quote-modal-content">
+    <span class="close-btn" id="close-share-quote-modal">&times;</span>
+    <h3>{{ t("poem", "share_quote_title") }}</h3>
+    <div class="selected-quote-preview" id="selected-quote-preview"></div>
+    <textarea id="quote-description" placeholder="Write a note about this quote…"></textarea>
+    <button type="button" id="submit-share-quote" class="submit-share-quote-btn">Share Quote</button>
+  </div>
+</div>
+
+<a href="{{ back_url or url_for('home') }}" style="display:inline-block;margin-top:24px;">← Back</a>
+
+<style>
+/* ── Action bar extra buttons ── */
+.pd-action-btn {
+  display: inline-block;
+  padding: 7px 14px;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  font-family: var(--font-display);
+  font-size: 0.58rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  text-decoration: none;
+  transition: background .15s, border-color .15s, color .15s;
+}
+.pd-action-btn:hover { background: var(--parchment-mid); border-color: var(--sepia); color: var(--sepia); }
+.pd-action-btn--accent { border-color: var(--sepia); color: var(--sepia); }
+
+/* ── Poem body: plain lines with end-of-line count badge ── */
+.poem-body {
+  background: var(--vellum);
+  border: 1px solid var(--border-soft);
+  border-radius: 3px;
+  padding: 28px 32px;
+  margin: 20px 0 28px;
+}
+.poem-line {
+  display: flex;
+  align-items: baseline;
+  min-height: 2em;
+}
+.poem-line-text {
+  font-family: var(--font-serif);
+  font-size: 1.12rem;
+  line-height: 2.05;
+  color: var(--ink-soft);
+  letter-spacing: .01em;
+  flex: 1;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.lc-btn {
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 2px 7px;
+  margin-left: 10px;
+  border-radius: 10px;
+  font-family: var(--font-display);
+  font-size: .58rem;
+  letter-spacing: .06em;
+  color: var(--ink-muted);
+  opacity: 0;
+  transition: opacity .15s, background .15s, color .15s;
+  min-width: 20px;
+  text-align: center;
+  line-height: 2.05;
+}
+.lc-btn.has-cmts { opacity: 1; background: var(--parchment-mid); color: var(--sepia); }
+.poem-line:hover .lc-btn { opacity: 1; }
+.lc-btn:hover { background: var(--parchment-mid); color: var(--sepia); }
+
+/* ── Line comment panel ── */
+.lc-overlay {
+  position: fixed; inset: 0; z-index: 1500;
+  background: rgba(30,19,10,.3);
+}
+.lc-panel {
+  position: fixed;
+  top: 50%; left: 50%;
+  transform: translate(-50%,-50%);
+  z-index: 1501;
+  width: min(420px, calc(100vw - 32px));
+  max-height: 80vh;
+  background: var(--cream);
+  border: 1px solid var(--border-soft);
+  border-radius: 4px;
+  box-shadow: var(--shadow-lg);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.lc-panel-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 20px 12px;
+  border-bottom: 1px solid var(--border-soft);
+  flex-shrink: 0;
+}
+.lc-panel-title {
+  font-family: var(--font-display);
+  font-size: .66rem;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--ink);
+}
+.lc-panel-close {
+  background: none; border: none; cursor: pointer;
+  font-size: 1rem; color: var(--ink-muted); padding: 0; line-height: 1;
+  transition: color .15s;
+}
+.lc-panel-close:hover { color: var(--ink); }
+.lc-panel-comments {
+  flex: 1; overflow-y: auto;
+  padding: 14px 20px;
+  min-height: 80px;
+}
+.lc-empty {
+  font-family: var(--font-serif);
+  font-style: italic;
+  color: var(--ink-muted);
+  font-size: .95rem;
+  text-align: center;
+  padding: 12px 0;
+}
+.lc-cmt {
+  padding: 9px 0;
+  border-bottom: 1px solid var(--border-soft);
+  font-family: var(--font-body);
+  font-size: .97rem;
+  line-height: 1.6;
+}
+.lc-cmt:last-child { border-bottom: none; }
+.lc-cmt-author { font-weight: 600; color: var(--sepia); margin-right: 5px; font-size: .88rem; }
+.lc-cmt-date   { color: var(--ink-muted); font-size: .78rem; margin-left: 6px; }
+.lc-panel-form {
+  padding: 12px 20px 16px;
+  border-top: 1px solid var(--border-soft);
+  display: flex; gap: 8px;
+  flex-shrink: 0;
+}
+.lc-panel-form textarea {
+  flex: 1; padding: 8px 10px;
+  font-family: var(--font-body); font-size: .97rem;
+  border: 1px solid var(--border); border-radius: 2px;
+  background: var(--vellum); color: var(--ink);
+  resize: none; line-height: 1.5;
+}
+.lc-panel-form textarea:focus { border-color: var(--sepia); outline: none; }
+.lc-panel-submit {
+  background: var(--ink-soft); color: var(--parchment); border: none;
+  border-radius: 2px; padding: 8px 16px; cursor: pointer; align-self: flex-end;
+  font-family: var(--font-display); font-size: .58rem; letter-spacing: .12em;
+  text-transform: uppercase; white-space: nowrap; transition: background .2s;
+}
+.lc-panel-submit:hover { background: var(--sepia); }
+.lc-panel-submit:disabled { opacity: .5; cursor: default; }
+.lc-panel-login {
+  padding: 12px 20px 16px; font-family: var(--font-serif);
+  font-style: italic; font-size: .92rem; color: var(--ink-muted);
+  text-align: center; border-top: 1px solid var(--border-soft); margin: 0;
+}
+.hidden { display: none !important; }
+</style>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const POEM_ID = parseInt(document.querySelector('.poem-detail').dataset.poemId, 10);
+
+  /* ── Load line comment counts ── */
+  fetch(`/poem/${POEM_ID}/line-counts`)
+    .then(r => r.json())
+    .then(counts => {
+      for (const [idx, cnt] of Object.entries(counts)) {
+        if (!cnt) continue;
+        const span = document.getElementById(`lc-${idx}`);
+        const btn  = document.querySelector(`.lc-btn[data-line="${idx}"]`);
+        if (span) span.textContent = cnt;
+        if (btn)  btn.classList.add('has-cmts');
+      }
+    }).catch(() => {});
+
+  /* ── Line comment panel ── */
+  const overlay   = document.getElementById('lc-overlay');
+  const panel     = document.getElementById('lc-panel');
+  const panelNum  = document.getElementById('lc-panel-num');
+  const panelCmts = document.getElementById('lc-panel-comments');
+  const panelInp  = document.getElementById('lc-panel-input');
+  const panelSub  = document.getElementById('lc-panel-submit');
+  let activeLine  = null;
+
+  function esc(s) {
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+  function openPanel(lineIdx) {
+    activeLine = lineIdx;
+    panelNum.textContent = lineIdx + 1;
+    panelCmts.innerHTML = '<p class="lc-empty">Loading…</p>';
+    panel.classList.remove('hidden');
+    overlay.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+    fetchComments(lineIdx);
+    if (panelInp) panelInp.focus();
+  }
+  function closePanel() {
+    panel.classList.add('hidden');
+    overlay.classList.add('hidden');
+    document.body.style.overflow = '';
+    activeLine = null;
+    if (panelInp) panelInp.value = '';
+  }
+  async function fetchComments(lineIdx) {
+    const res  = await fetch(`/poem/${POEM_ID}/line/${lineIdx}/comments`);
+    const data = await res.json();
+    if (!data.length) {
+      panelCmts.innerHTML = '<p class="lc-empty">No comments on this line yet.</p>';
+    } else {
+      panelCmts.innerHTML = data.map(c =>
+        `<div class="lc-cmt"><span class="lc-cmt-author">@${esc(c.username)}</span>${esc(c.comment)}<span class="lc-cmt-date">${c.created_at.slice(0,10)}</span></div>`
+      ).join('');
+      panelCmts.scrollTop = panelCmts.scrollHeight;
+    }
+  }
+
+  document.querySelectorAll('.lc-btn').forEach(btn =>
+    btn.addEventListener('click', e => { e.stopPropagation(); openPanel(+btn.dataset.line); })
+  );
+  document.getElementById('lc-panel-close')?.addEventListener('click', closePanel);
+  overlay.addEventListener('click', closePanel);
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closePanel(); });
+
+  if (panelSub) {
+    async function postComment() {
+      const text = panelInp.value.trim();
+      if (!text || activeLine === null) return;
+      panelSub.disabled = true;
+      const res  = await fetch(`/poem/${POEM_ID}/line/${activeLine}/comments`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ comment: text })
+      });
+      const data = await res.json();
+      panelSub.disabled = false;
+      if (data.success) {
+        panelInp.value = '';
+        await fetchComments(activeLine);
+        const span = document.getElementById(`lc-${activeLine}`);
+        const cbtn = document.querySelector(`.lc-btn[data-line="${activeLine}"]`);
+        if (span) span.textContent = (parseInt(span.textContent) || 0) + 1;
+        if (cbtn) cbtn.classList.add('has-cmts');
+      }
+    }
+    panelSub.addEventListener('click', postComment);
+    panelInp.addEventListener('keydown', e => {
+      if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); postComment(); }
+    });
+  }
+
+  /* ── Reply toggles ── */
+  document.querySelectorAll(".reply-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const box = document.getElementById(btn.dataset.target);
+      if (!box) return;
+      box.classList.toggle("hidden");
+      const tag = btn.dataset.tag || "";
+      const tagInput = box.querySelector('input[name="reply_tag"]');
+      const ta = box.querySelector("textarea");
+      if (tagInput) tagInput.value = tag;
+      if (ta) { ta.value = ""; ta.focus(); }
+    });
+  });
+  document.querySelectorAll(".toggle-replies-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const box = document.getElementById(btn.dataset.target);
+      if (!box) return;
+      const hidden = box.classList.toggle("hidden");
+      const n = box.querySelectorAll(".comment.reply").length;
+      btn.textContent = hidden ? `View replies (${n})` : "Hide replies";
+    });
+  });
+  document.querySelectorAll(".copy-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const body = btn.closest(".comment")?.querySelector(".comment-body");
+      if (body) navigator.clipboard.writeText(body.innerText)
+        .then(() => { btn.textContent = "Copied!"; setTimeout(() => btn.textContent = "Copy", 1400); });
+    });
+  });
+  document.querySelectorAll(".share-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const id  = btn.closest(".comment")?.id;
+      const url = `${location.href.split("#")[0]}#${id}`;
+      navigator.clipboard.writeText(url)
+        .then(() => { btn.textContent = "Copied!"; setTimeout(() => btn.textContent = "Share", 1400); });
+    });
+  });
+
+  /* ── Poem share FAB ── */
+  const shareBtn  = document.getElementById("poemShareBtn");
+  const shareMenu = document.getElementById("poemShareMenu");
+  const poemUrl   = window.location.href;
+  const poemTitle = document.querySelector(".poem-detail h2")?.innerText || "Poem";
+  if (shareBtn && shareMenu) {
+    shareBtn.addEventListener("click", e => { e.stopPropagation(); shareMenu.classList.toggle("hidden"); });
+    document.addEventListener("click", e => {
+      if (!shareMenu.contains(e.target) && e.target !== shareBtn) shareMenu.classList.add("hidden");
+    });
+    document.getElementById("share-whatsapp").href = `https://wa.me/?text=${encodeURIComponent(poemTitle + " — " + poemUrl)}`;
+    document.getElementById("share-facebook").href = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(poemUrl)}`;
+    document.getElementById("share-x").href = `https://twitter.com/intent/tweet?text=${encodeURIComponent(poemTitle)}&url=${encodeURIComponent(poemUrl)}`;
+    document.getElementById("share-instagram").addEventListener("click", e => {
+      e.preventDefault(); navigator.clipboard.writeText(poemUrl).then(() => alert("Link copied — paste into Instagram."));
+    });
+    document.getElementById("copy-poem-link").addEventListener("click", () => {
+      navigator.clipboard.writeText(poemUrl).then(() => alert("Poem link copied!"));
+    });
+  }
+
+  /* ── Save poem ── */
+  const savePoemBtn = document.getElementById("save-poem-btn");
+  if (savePoemBtn) {
+    savePoemBtn.addEventListener("click", async () => {
+      const res  = await fetch(`/toggle_save_poem/${POEM_ID}`, { method:"POST", headers:{"X-Requested-With":"XMLHttpRequest"} });
+      const data = await res.json();
+      if (data.success) {
+        if (data.action === "saved") { savePoemBtn.textContent = "Saved ✓"; savePoemBtn.classList.add("saved"); }
+        else { savePoemBtn.textContent = "Save Poem ☆"; savePoemBtn.classList.remove("saved"); }
+      }
+    });
+  }
+
+  /* ── Floating quote buttons ── */
+  const sqBtn  = document.getElementById("save-quote-btn");
+  const shBtn  = document.getElementById("share-quote-btn");
+  const pbEl   = document.getElementById("poem-body");
+  function getSel() { return window.getSelection().toString().replace(/\r\n/g,"\n").trim(); }
+  document.addEventListener("mouseup", () => {
+    if (!sqBtn || !shBtn || !pbEl) return;
+    const sel = window.getSelection();
+    const txt = getSel();
+    if (txt && sel.rangeCount > 0 && pbEl.contains(sel.anchorNode) && pbEl.contains(sel.focusNode)) {
+      const rect = sel.getRangeAt(0).getBoundingClientRect();
+      const top = `${window.scrollY + rect.top - 52}px`;
+      sqBtn.style.cssText  = `top:${top}; left:${window.scrollX + rect.left}px`;
+      shBtn.style.cssText  = `top:${top}; left:${window.scrollX + rect.left + 136}px`;
+      sqBtn.classList.remove("hidden"); shBtn.classList.remove("hidden");
+    } else {
+      setTimeout(() => {
+        if (!sqBtn.matches(":hover"))  sqBtn.classList.add("hidden");
+        if (!shBtn.matches(":hover"))  shBtn.classList.add("hidden");
+      }, 120);
+    }
+  });
+  document.addEventListener("mousedown", e => {
+    if (!sqBtn || !shBtn) return;
+    if (!sqBtn.contains(e.target) && !shBtn.contains(e.target)) {
+      setTimeout(() => { if (!getSel()) { sqBtn.classList.add("hidden"); shBtn.classList.add("hidden"); } }, 100);
+    }
+  });
+  if (sqBtn) {
+    sqBtn.addEventListener("click", async () => {
+      const txt = getSel(); if (!txt) { sqBtn.classList.add("hidden"); return; }
+      const fd = new FormData(); fd.append("poem_id", POEM_ID); fd.append("quote_text",txt);
+      const res = await fetch("/save_quote",{method:"POST",body:fd});
+      const d = await res.json();
+      if (d.success) {
+        sqBtn.textContent = "Quote Saved ✓";
+        setTimeout(() => { sqBtn.textContent="Save Quote ✨"; sqBtn.classList.add("hidden"); shBtn.classList.add("hidden"); window.getSelection().removeAllRanges(); }, 1000);
+      }
+    });
+  }
+  const sqModal = document.getElementById("shareQuoteModal");
+  const closeBtn = document.getElementById("close-share-quote-modal");
+  const qPrev   = document.getElementById("selected-quote-preview");
+  const qDesc   = document.getElementById("quote-description");
+  const qSubmit = document.getElementById("submit-share-quote");
+  if (shBtn) {
+    shBtn.addEventListener("click", () => {
+      const txt = getSel(); if (!txt) return;
+      qPrev.textContent = `"${txt}"`; if (qDesc) qDesc.value = "";
+      sqModal.style.display = "flex";
+    });
+  }
+  closeBtn?.addEventListener("click", () => sqModal.style.display = "none");
+  window.addEventListener("click", e => { if (e.target === sqModal) sqModal.style.display = "none"; });
+  if (qSubmit) {
+    qSubmit.addEventListener("click", async () => {
+      const txt = (qPrev?.textContent||"").replace(/^"|"$/g,"").trim();
+      const desc = qDesc?.value.trim()||"";
+      if (!txt) { alert("No quote selected."); return; }
+      const fd = new FormData(); fd.append("poem_id", POEM_ID); fd.append("quote_text",txt); fd.append("description",desc);
+      const res = await fetch("/share_quote",{method:"POST",body:fd});
+      const d = await res.json();
+      if (d.success) {
+        qSubmit.textContent = "Shared ✓";
+        setTimeout(() => { qSubmit.textContent="Share Quote"; sqModal.style.display="none"; sqBtn?.classList.add("hidden"); shBtn?.classList.add("hidden"); window.getSelection().removeAllRanges(); }, 1000);
+      } else { alert(d.error||"Could not share."); }
+    });
+  }
+
+  /* ── Reading time beacon ── */
+  const startTs = Date.now();
+  const sendTime = () => {
+    const secs = Math.floor((Date.now()-startTs)/1000);
+    navigator.sendBeacon("/poem_time", new Blob([JSON.stringify({poem_id:POEM_ID,time_spent:secs})],{type:"application/json"}));
+  };
+  window.addEventListener("beforeunload", sendTime);
+  document.addEventListener("visibilitychange", () => { if (document.visibilityState==="hidden") sendTime(); });
+});
+</script>
+{% endblock %}

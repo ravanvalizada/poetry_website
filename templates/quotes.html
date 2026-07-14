@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="quotes-page">
+    <div class="quotes-header">
+        <h1>{{ t("quotes", "salon_title") }}</h1>
+        <p>{{ t("quotes", "salon_subtitle") }}</p>
+    </div>
+
+    {% if quotes %}
+        <div class="quotes-list">
+            {% for quote in quotes %}
+                <div class="quote-card">
+                    <div class="quote-text">“{{ quote.quote_text }}”</div>
+
+                    <div class="quote-author">— {{ quote.author }}</div>
+
+                    {% if quote.poem_id %}
+                        <div class="quote-poem">
+                            {{ t("quotes", "from_poem") }}
+                            <a href="{{ url_for('poem_detail', poem_id=quote.poem_id) }}">
+                                {{ quote.poem_title }}
+                            </a>
+                        </div>
+                    {% endif %}
+
+                    {% if quote.description %}
+                        <div class="quote-description">
+                            {{ quote.description }}
+                        </div>
+                    {% endif %}
+                    <div class="quote-footer">
+                        <span>
+                            {{ t("quotes", "shared_by") }}
+                            <a href="/profile/{{ quote.user_id }}">@{{ quote.username }}</a>
+                        </span>
+
+                        {% if quote.date %}
+                            <span>{{ quote.date | string | truncate(10, False, "") }}</span>
+                        {% endif %}
+                    </div>
+
+                    {% if session.get("user_id") %}
+                    <div class="quote-actions">
+                        <button
+                            type="button"
+                            class="quote-like-btn {% if quote.is_liked %}liked{% endif %}"
+                            data-id="{{ quote.id }}">
+                            ❤️ <span class="quote-like-count">{{ quote.like_count }}</span>
+                        </button>
+
+                        <button
+                            type="button"
+                            class="quote-save-btn {% if quote.is_saved %}saved{% endif %}"
+                            data-id="{{ quote.id }}"
+                            data-saved-label="{{ t('quotes', 'saved_btn') }}"
+                            data-save-label="{{ t('quotes', 'save_btn') }}">
+                            {% if quote.is_saved %}{{ t("quotes", "saved_btn") }}{% else %}{{ t("quotes", "save_btn") }}{% endif %}
+                        </button>
+                    </div>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="quotes-empty">
+            <h3>{{ t("quotes", "no_quotes") }}</h3>
+            <p>{{ t("quotes", "no_quotes_hint") }}</p>
+        </div>
+    {% endif %}
+</div>
+
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    document.querySelectorAll(".quote-like-btn").forEach(button => {
+        button.addEventListener("click", async () => {
+            const quoteId = button.dataset.id;
+
+            try {
+                const res = await fetch(`/toggle_quote_like/${quoteId}`, {
+                    method: "POST",
+                    headers: {
+                        "X-Requested-With": "XMLHttpRequest"
+                    }
+                });
+
+                const data = await res.json();
+
+                if (data.success) {
+                    const countSpan = button.querySelector(".quote-like-count");
+                    if (countSpan) {
+                        countSpan.textContent = data.like_count;
+                    }
+
+                    if (data.action === "liked") {
+                        button.classList.add("liked");
+                    } else if (data.action === "unliked") {
+                        button.classList.remove("liked");
+                    }
+                }
+            } catch (err) {
+                console.error("Error toggling quote like:", err);
+            }
+        });
+    });
+
+    document.querySelectorAll(".quote-save-btn").forEach(button => {
+        button.addEventListener("click", async () => {
+            const quoteId = button.dataset.id;
+
+            try {
+                const res = await fetch(`/toggle_save_shared_quote/${quoteId}`, {
+                    method: "POST",
+                    headers: {
+                        "X-Requested-With": "XMLHttpRequest"
+                    }
+                });
+
+                const data = await res.json();
+
+                if (data.success) {
+                    if (data.action === "saved") {
+                        button.textContent = button.dataset.savedLabel;
+                        button.classList.add("saved");
+                    } else if (data.action === "unsaved") {
+                        button.textContent = button.dataset.saveLabel;
+                        button.classList.remove("saved");
+                    }
+                }
+            } catch (err) {
+                console.error("Error toggling quote save:", err);
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

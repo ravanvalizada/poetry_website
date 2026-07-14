@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="{{ current_lang | default('en') }}">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Poetry Salon{% endblock %}</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&family=IM+Fell+English:ital@0;1&family=Cinzel:wght@400;500&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='light_mode/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='dark_mode/dark-mode.css') }}">
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='light_mode/components/navbar.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='light_mode/components/forms.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='light_mode/components/poems.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='light_mode/components/comments.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='light_mode/components/edit_profile.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='light_mode/components/messages.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='light_mode/components/edit_poem.css') }}">
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='light_mode/pages/profile.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='light_mode/pages/poem_detail.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='light_mode/pages/waiting_salon.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='light_mode/pages/collections.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='light_mode/pages/quotes.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='light_mode/pages/badges.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='light_mode/pages/chain_salon.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='light_mode/pages/hidden_game_salon.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='light_mode/pages/living_poem_salon.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='light_mode/pages/weekly_salon.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='light_mode/pages/circles_salon.css') }}">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/forge/1.3.1/forge.min.js"></script>
+</head>
+<body data-current-user-id="{{ session.get('user_id', '') }}">
+
+<header class="navbar">
+    <a href="{{ url_for('home') }}" class="logo">{{ t("home", "title") }}</a>
+    <div class="salons-dropdown">
+        <button type="button" class="salons-dropdown-btn">
+            {{ t("nav", "salons") }} <span class="salons-caret">▾</span>
+        </button>
+        <div class="salons-dropdown-menu">
+            <a href="{{ url_for('chain_salon') }}">{{ t("salon", "chain_title") }}</a>
+            <a href="{{ url_for('weekly_salon') }}">{{ t("salon", "weekly_title") }}</a>
+            <a href="{{ url_for('hidden_poet') }}">{{ t("salon", "hidden_poet") }}</a>
+            <a href="{{ url_for('circles') }}">{{ t("salon", "circles_title") }}</a>
+            <a href="{{ url_for('living_poem') }}">{{ t("salon", "living_poem") }}</a>
+            <div class="salons-divider"></div>
+            <a href="{{ url_for('quotes') }}">{{ t("nav", "quotes_salon") }}</a>
+        </div>
+    </div>
+
+    <a href="{{ url_for('discover') }}" class="nav-discover-link">{{ t("nav", "discover") }}</a>
+
+    <form action="{{ url_for('search') }}" method="get" class="nav-search-form">
+        <input type="text" name="search" placeholder="{{ t('search', 'placeholder') }}" class="nav-search">
+    </form>
+
+    <div class="nav-right">
+        {% if session.get("username") %}
+            <a href="{{ url_for('upload') }}">{{ t("nav", "upload") }}</a>
+            <a href="{{ url_for('waiting_salon') }}">{{ t("nav", "waiting_salon") }}</a>
+
+            <div class="profile-dropdown">
+                <a href="#" class="profile-dropdown-btn">{{ t("nav", "profile") }} ▾</a>
+
+                <div class="profile-dropdown-menu">
+                    <a href="{{ url_for('profile', user_id=session['user_id']) }}">{{ t("nav", "my_salon") }}</a>
+                    <a href="{{ url_for('notifications_page') }}" class="notif-link">
+                        {{ t("nav", "notifications") }}
+                        <span class="notif-badge" id="notif-badge">
+                            {{ unread_notifications_count if unread_notifications_count > 0 else "" }}
+                        </span>
+                    </a>
+                    <a href="{{ url_for('badges_page') }}">{{ t("profile", "badges") }}</a>
+                    <a href="{{ url_for('savings') }}">{{ t("profile", "savings") }}</a>
+                    <a href="{{ url_for('my_collections') }}">{{ t("nav", "my_collections") }}</a>
+                </div>
+            </div>
+
+            <a href="{{ url_for('logout') }}">{{ t("nav", "logout") }}</a>
+        {% else %}
+            <a href="{{ url_for('login') }}">{{ t("nav", "login") }}</a>
+            <a href="{{ url_for('register') }}">{{ t("nav", "register") }}</a>
+        {% endif %}
+
+        <button id="darkModeToggle" type="button">🌙</button>
+    </div>
+</header>
+
+<!-- Floating Language Switcher -->
+<div class="lang-switcher-float">
+    {% for lang in supported_languages %}
+        <a href="{{ url_for('set_language', lang=lang, next=request.path) }}"
+           class="{{ 'lang-active' if lang == current_lang else '' }}">{{ lang | upper }}</a>
+        {% if not loop.last %}<span class="lang-sep">|</span>{% endif %}
+    {% endfor %}
+</div>
+
+<main class="container">
+    {% block content %}{% endblock %}
+</main>
+
+<footer class="footer">
+    <p>© 2026 A quiet salon for Victorian Poetry</p>
+</footer>
+
+{% if session.get("user_id") %}
+<button id="openMessages" class="messages-toggle" type="button">💬</button>
+
+<div id="messagesPanel" class="messages-panel">
+    <div class="messages-header">
+        <span>{{ t("messages", "title") }}</span>
+        <button id="closeMessages" type="button">✕</button>
+    </div>
+
+    <div class="messages-body">
+        <div class="conversation-list" id="conversationList"></div>
+
+        <div class="chat-window">
+            <div class="chat-topbar" id="chatTopbar">{{ t("messages", "no_conversations") }}</div>
+
+            <div class="chat-messages" id="chatMessages">
+                <p class="empty-chat-text">{{ t("messages", "no_conversations") }}</p>
+            </div>
+
+            <div class="chat-input">
+                <input type="text" id="messageInput" placeholder="{{ t('messages', 'placeholder') }}">
+                <button id="sendMessageBtn" type="button">{{ t("messages", "send") }}</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<audio id="bg-music"></audio>
+<button id="music-toggle" class="music-btn" type="button">🔈</button>
+
+<script>
+const CURRENT_USER_ID = Number(document.body.dataset.currentUserId) || null;
+
+// Clean up old non-namespaced keys (shared between users - security fix)
+if (CURRENT_USER_ID) {
+    if (localStorage.getItem("privateKey") || localStorage.getItem("publicKey")) {
+        localStorage.removeItem("privateKey");
+        localStorage.removeItem("publicKey");
+    }
+}
+</script>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    // =========================
+    // DARK MODE TOGGLE
+    // =========================
+    const darkToggle = document.getElementById("darkModeToggle");
+
+    if (darkToggle) {
+        if (localStorage.getItem("darkMode") === "enabled") {
+            document.body.classList.add("dark-mode");
+            darkToggle.textContent = "☀️";
+        }
+
+        darkToggle.addEventListener("click", () => {
+            document.body.classList.toggle("dark-mode");
+            const enabled = document.body.classList.contains("dark-mode");
+            localStorage.setItem("darkMode", enabled ? "enabled" : "disabled");
+            darkToggle.textContent = enabled ? "☀️" : "🌙";
+        });
+    }
+
+    // =========================
+    // MUSIC SYSTEM
+    // =========================
+    const tracks = [
+        "music1.mp3", "music2.mp3", "music3.mp3", "music4.mp3",
+        "music5.mp3", "music6.mp3", "music7.mp3", "music8.mp3"
+    ];
+    const music = document.getElementById("bg-music");
+    const musicBtn = document.getElementById("music-toggle");
+    const TARGET_VOLUME = 0.8;
+    let isPlaying = false;
+    let fadeTimer = null;
+
+    function randomTrack() {
+        return tracks[Math.floor(Math.random() * tracks.length)];
+    }
+
+    function fadeIn() {
+        clearInterval(fadeTimer);
+        let v = 0;
+        music.volume = 0;
+        fadeTimer = setInterval(() => {
+            if (v < TARGET_VOLUME) {
+                v += 0.01;
+                music.volume = v;
+            } else {
+                clearInterval(fadeTimer);
+            }
+        }, 200);
+    }
+
+    function fadeOut(cb) {
+        clearInterval(fadeTimer);
+        let v = music.volume;
+        fadeTimer = setInterval(() => {
+            if (v > 0.02) {
+                v -= 0.01;
+                music.volume = v;
+            } else {
+                clearInterval(fadeTimer);
+                if (cb) cb();
+            }
+        }, 20);
+    }
+
+    function resumePlayback() {
+        const enabled = localStorage.getItem("music_enabled") === "true";
+        const track = localStorage.getItem("music_track");
+        const time = parseFloat(localStorage.getItem("music_time")) || 0;
+
+        if (!enabled || !track) return;
+
+        music.src = "/static/music/" + track;
+        music.currentTime = time;
+        music.play().then(() => {
+            fadeIn();
+            isPlaying = true;
+            musicBtn.textContent = "🔊";
+        }).catch(() => {});
+    }
+
+    music.addEventListener("ended", () => {
+        const next = randomTrack();
+        localStorage.setItem("music_track", next);
+        localStorage.setItem("music_time", 0);
+        fadeOut(() => {
+            music.src = "/static/music/" + next;
+            music.currentTime = 0;
+            music.play();
+            fadeIn();
+        });
+    });
+
+    setInterval(() => {
+        if (isPlaying && !music.paused) {
+            localStorage.setItem("music_time", music.currentTime);
+        }
+    }, 1000);
+
+    if (musicBtn) {
+        musicBtn.addEventListener("click", () => {
+            if (!isPlaying) {
+                localStorage.setItem("music_enabled", "true");
+
+                if (!localStorage.getItem("music_track")) {
+                    localStorage.setItem("music_track", randomTrack());
+                    localStorage.setItem("music_time", 0);
+                }
+
+                resumePlayback();
+            } else {
+                fadeOut(() => music.pause());
+                localStorage.setItem("music_enabled", "false");
+                isPlaying = false;
+                musicBtn.textContent = "🔈";
+            }
+        });
+    }
+
+    document.addEventListener("pointerdown", e => {
+        if (e.target.closest("a")) {
+            sessionStorage.setItem("music_bridge", "true");
+        }
+    });
+
+    if (sessionStorage.getItem("music_bridge") === "true") {
+        sessionStorage.removeItem("music_bridge");
+        resumePlayback();
+    }
+
+    // =========================
+    // NOTIFICATIONS
+    // =========================
+    async function updateNotificationBadge() {
+        try {
+            const res = await fetch("/notifications/unread_count");
+            const data = await res.json();
+
+            const badge = document.getElementById("notif-badge");
+            if (!badge) return;
+
+            if (data.count > 0) {
+                badge.textContent = data.count;
+                badge.style.display = "inline-flex";
+            } else {
+                badge.textContent = "";
+                badge.style.display = "none";
+            }
+        } catch (err) {
+            console.error("Notification update error:", err);
+        }
+    }
+
+    setInterval(updateNotificationBadge, 20000);
+    updateNotificationBadge();
+
+    // =========================
+    // PROFILE DROPDOWN
+    // =========================
+    const dropdown = document.querySelector(".profile-dropdown");
+    const dropdownBtn = document.querySelector(".profile-dropdown-btn");
+
+    if (dropdownBtn && dropdown) {
+        dropdownBtn.addEventListener("click", (e) => {
+            e.preventDefault();
+            dropdown.classList.toggle("open");
+        });
+
+        document.addEventListener("click", (e) => {
+            if (!dropdown.contains(e.target)) {
+                dropdown.classList.remove("open");
+            }
+        });
+    }
+
+    // =========================
+    // SALONS DROPDOWN
+    // =========================
+    const salonsDropdown = document.querySelector(".salons-dropdown");
+    const salonsBtn = document.querySelector(".salons-dropdown-btn");
+    if (salonsBtn && salonsDropdown) {
+        salonsBtn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            salonsDropdown.classList.toggle("open");
+        });
+        document.addEventListener("click", (e) => {
+            if (!salonsDropdown.contains(e.target)) {
+                salonsDropdown.classList.remove("open");
+            }
+        });
+    }
+
+    // =========================
+    // SAVINGS TABS
+    // =========================
+    const tabs = document.querySelectorAll(".savings-tab");
+    const contents = document.querySelectorAll(".savings-content");
+
+    tabs.forEach(tab => {
+        tab.addEventListener("click", () => {
+            tabs.forEach(t => t.classList.remove("active"));
+            contents.forEach(c => c.classList.remove("active"));
+
+            tab.classList.add("active");
+            const target = document.getElementById(tab.dataset.target);
+
+            if (target) {
+                target.classList.add("active");
+            }
+        });
+    });
+
+    // =========================
+    // CRYPTO HELPERS (forge.js - works over HTTP)
+    // =========================
+
+    function generateKeyPair() {
+        const keypair = forge.pki.rsa.generateKeyPair({ bits: 2048, e: 0x10001 });
+        return {
+            publicKey: forge.pki.publicKeyToPem(keypair.publicKey),
+            privateKey: forge.pki.privateKeyToPem(keypair.privateKey)
+        };
+    }
+
+    function encryptMessage(messageText, senderPublicKeyPem, receiverPublicKeyPem) {
+        // Generate random AES-256 key and IV
+        const aesKey = forge.random.getBytesSync(32);
+        const iv = forge.random.getBytesSync(12);
+
+        // Encrypt message with AES-GCM
+        const cipher = forge.cipher.createCipher("AES-GCM", aesKey);
+        cipher.start({ iv: iv });
+        cipher.update(forge.util.createBuffer(forge.util.encodeUtf8(messageText)));
+        cipher.finish();
+        const encryptedMessage = cipher.output.getBytes();
+        const authTag = cipher.mode.tag.getBytes();
+
+        // Encrypt AES key with both RSA public keys
+        const senderPub = forge.pki.publicKeyFromPem(senderPublicKeyPem);
+        const receiverPub = forge.pki.publicKeyFromPem(receiverPublicKeyPem);
+
+        const encryptedKeySender = senderPub.encrypt(aesKey, "RSA-OAEP");
+        const encryptedKeyReceiver = receiverPub.encrypt(aesKey, "RSA-OAEP");
+
+        return {
+            encrypted_message: forge.util.encode64(encryptedMessage + authTag),
+            encrypted_key_sender: forge.util.encode64(encryptedKeySender),
+            encrypted_key_receiver: forge.util.encode64(encryptedKeyReceiver),
+            iv: forge.util.encode64(iv)
+        };
+    }
+
+    function decryptMessage(encryptedMessageB64, encryptedKeyB64, ivB64, privateKeyPem) {
+        try {
+            const privateKey = forge.pki.privateKeyFromPem(privateKeyPem);
+            const aesKey = privateKey.decrypt(forge.util.decode64(encryptedKeyB64), "RSA-OAEP");
+
+            const encryptedBytes = forge.util.decode64(encryptedMessageB64);
+            const iv = forge.util.decode64(ivB64);
+
+            // Last 16 bytes are the auth tag
+            const ciphertext = encryptedBytes.slice(0, -16);
+            const authTag = encryptedBytes.slice(-16);
+
+            const decipher = forge.cipher.createDecipher("AES-GCM", aesKey);
+            decipher.start({
+                iv: iv,
+                tag: forge.util.createBuffer(authTag)
+            });
+            decipher.update(forge.util.createBuffer(ciphertext));
+            const pass = decipher.finish();
+
+            if (!pass) return "[Decryption failed]";
+            return forge.util.decodeUtf8(decipher.output.getBytes());
+        } catch (e) {
+            console.error("Decrypt error:", e);
+            return "[Unable to decrypt]";
+        }
+    }
+
+    function ensureKeys() {
+        let publicKey = localStorage.getItem(`publicKey_${CURRENT_USER_ID}`);
+        let privateKey = localStorage.getItem(`privateKey_${CURRENT_USER_ID}`);
+
+        if (!publicKey || !privateKey) {
+            const pair = generateKeyPair();
+            publicKey = pair.publicKey;
+            privateKey = pair.privateKey;
+            localStorage.setItem(`publicKey_${CURRENT_USER_ID}`, publicKey);
+            localStorage.setItem(`privateKey_${CURRENT_USER_ID}`, privateKey);
+        }
+        return { publicKey, privateKey };
+    }
+
+    async function savePublicKeyToServer(publicKey) {
+        try {
+            const res = await fetch("/messages/save_public_key", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ public_key: publicKey })
+            });
+            const data = await res.json();
+            if (!data.success) console.warn("Could not save public key:", data.error);
+        } catch (e) {
+            console.warn("save_public_key network error:", e);
+        }
+    }
+
+    async function fetchUserPublicKey(userId) {
+        try {
+            const res = await fetch(`/messages/public_key/${userId}`);
+            const data = await res.json();
+            return data.success ? data.public_key : null;
+        } catch (e) {
+            return null;
+        }
+    }
+
+    // =========================
+    // MESSAGES PANEL
+    // =========================
+    const openBtn = document.getElementById("openMessages");
+    const closeBtn = document.getElementById("closeMessages");
+    const panel = document.getElementById("messagesPanel");
+    const conversationList = document.getElementById("conversationList");
+    const chatMessages = document.getElementById("chatMessages");
+    const chatTopbar = document.getElementById("chatTopbar");
+    const sendMessageBtn = document.getElementById("sendMessageBtn");
+    const messageInput = document.getElementById("messageInput");
+
+    let activeReceiverId = null;
+    let activeReceiverUsername = "Conversation";
+    let messagesPollingInterval = null;
+    let conversationsPollingInterval = null;
+
+    function escapeHtml(text) {
+        const div = document.createElement("div");
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    function startMessagePolling() {
+        stopMessagePolling();
+        messagesPollingInterval = setInterval(() => {
+            if (activeReceiverId) loadMessages(activeReceiverId, activeReceiverUsername);
+        }, 3000);
+        conversationsPollingInterval = setInterval(() => {
+            loadConversations();
+        }, 5000);
+    }
+
+    function stopMessagePolling() {
+        if (messagesPollingInterval) { clearInterval(messagesPollingInterval); messagesPollingInterval = null; }
+        if (conversationsPollingInterval) { clearInterval(conversationsPollingInterval); conversationsPollingInterval = null; }
+    }
+
+    async function loadConversations() {
+        if (!conversationList) return;
+        try {
+            const response = await fetch("/messages/conversations");
+            if (!response.ok) return;
+            const data = await response.json();
+
+            if (!data.conversations || !data.conversations.length) {
+                conversationList.innerHTML = "<p class='empty-chat-text'>No conversations yet.</p>";
+                return;
+            }
+
+            conversationList.innerHTML = data.conversations.map(conv => `
+                <div class="conversation-item ${Number(conv.other_user_id) === Number(activeReceiverId) ? "active" : ""}"
+                     data-user-id="${conv.other_user_id}"
+                     data-username="${escapeHtml(conv.username)}">
+                    <div class="conversation-name">${escapeHtml(conv.username)}</div>
+                    <div class="conversation-preview"></div>
+                    ${conv.unread_count > 0 ? `<span class="unread-badge">${conv.unread_count}</span>` : ""}
+                </div>
+            `).join("");
+
+            document.querySelectorAll(".conversation-item").forEach(item => {
+                item.addEventListener("click", () => {
+                    loadMessages(item.dataset.userId, item.dataset.username);
+                });
+            });
+        } catch (err) {
+            console.error("Conversation load error:", err);
+        }
+    }
+
+    async function loadMessages(otherUserId, username = "Conversation") {
+        if (!chatMessages) return;
+
+        activeReceiverId = Number(otherUserId);
+        activeReceiverUsername = username;
+
+        chatTopbar.innerHTML = `
+            <a href="/profile/${otherUserId}" class="chat-topbar-user-link">
+                ${escapeHtml(username)}
+            </a>
+        `;
+
+        try {
+            const response = await fetch(`/messages/${otherUserId}`);
+            if (!response.ok) {
+                chatMessages.innerHTML = "<p class='empty-chat-text'>Could not load messages.</p>";
+                return;
+            }
+            const data = await response.json();
+
+            if (!data.messages || !data.messages.length) {
+                chatMessages.innerHTML = "<p class='empty-chat-text'>No messages yet.</p>";
+                await loadConversations();
+                return;
+            }
+
+            const { privateKey } = ensureKeys();
+
+            const htmlParts = data.messages.map(msg => {
+                let plainText = "[Unable to decrypt]";
+                try {
+                    const encryptedKey = msg.sender_id === CURRENT_USER_ID
+                        ? msg.encrypted_key_sender
+                        : msg.encrypted_key_receiver;
+
+                    if (encryptedKey && msg.encrypted_message && msg.iv) {
+                        plainText = decryptMessage(msg.encrypted_message, encryptedKey, msg.iv, privateKey);
+                    }
+                } catch (e) {
+                    console.error("Decrypt error for msg", msg.id, e);
+                }
+
+                return `
+                    <div class="chat-message ${msg.sender_id === CURRENT_USER_ID ? "sent" : "received"}">
+                        <div class="chat-bubble">${escapeHtml(plainText)}</div>
+                    </div>
+                `;
+            });
+
+            chatMessages.innerHTML = htmlParts.join("");
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+            await loadConversations();
+        } catch (err) {
+            console.error("Message load error:", err);
+            chatMessages.innerHTML = "<p class='empty-chat-text'>Could not load messages.</p>";
+        }
+    }
+
+    async function sendMessage() {
+        const text = messageInput.value.trim();
+        if (!activeReceiverId || !text) return;
+
+        sendMessageBtn.disabled = true;
+
+        try {
+            const { publicKey: senderPublicKey, privateKey } = ensureKeys();
+
+            // Save our key to server if not yet saved
+            const myDbKey = await fetchUserPublicKey(CURRENT_USER_ID);
+            if (!myDbKey) {
+                await savePublicKeyToServer(senderPublicKey);
+            }
+
+            const receiverPublicKey = await fetchUserPublicKey(activeReceiverId);
+            if (!receiverPublicKey) {
+                chatMessages.innerHTML += "<p class='empty-chat-text' style='color:#c0392b'>This user has not set up messaging yet. Ask them to open the messages panel first.</p>";
+                return;
+            }
+
+            const payload = encryptMessage(text, senderPublicKey, receiverPublicKey);
+
+            const response = await fetch("/messages/send", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    receiver_id: activeReceiverId,
+                    ...payload
+                })
+            });
+
+            const data = await response.json();
+            if (!data.success) throw new Error(data.error || "Failed to send message");
+
+            messageInput.value = "";
+            await loadMessages(activeReceiverId, activeReceiverUsername);
+        } catch (err) {
+            console.error("Send error:", err);
+            alert(err.message || "Failed to send message");
+        } finally {
+            sendMessageBtn.disabled = false;
+        }
+    }
+
+    // Initialize keys on page load (non-blocking)
+    if (CURRENT_USER_ID) {
+        setTimeout(async () => {
+            const { publicKey } = ensureKeys();
+            const existing = await fetchUserPublicKey(CURRENT_USER_ID);
+            if (!existing) await savePublicKeyToServer(publicKey);
+        }, 1000);
+    }
+
+    if (openBtn && panel) {
+        openBtn.addEventListener("click", async () => {
+            panel.classList.add("open");
+            await loadConversations();
+            startMessagePolling();
+        });
+    }
+
+    if (closeBtn && panel) {
+        closeBtn.addEventListener("click", () => {
+            panel.classList.remove("open");
+            stopMessagePolling();
+        });
+    }
+
+    if (sendMessageBtn) {
+        sendMessageBtn.addEventListener("click", sendMessage);
+    }
+
+    if (messageInput) {
+        messageInput.addEventListener("keydown", function(e) {
+            if (e.key === "Enter") { e.preventDefault(); sendMessage(); }
+        });
+    }
+
+    window.openMessagePanelForUser = async function(userId, username = "Conversation") {
+        if (!panel) return;
+        panel.classList.add("open");
+        await loadConversations();
+        await loadMessages(userId, username);
+        startMessagePolling();
+    };
+
+    window.addEventListener("beforeunload", stopMessagePolling);
+});
+</script>
+
+{% block scripts %}{% endblock %}
+
+</body>
+</html>
